@@ -32,4 +32,5 @@ def place_limit_order(client, symbol, side, quantity, price):
         return order
     except BinanceAPIException as e:
         log.error(f"ERROR placing limit order: {e}")
+
         return None
