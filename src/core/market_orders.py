@@ -24,4 +24,5 @@ def place_market_order(client, symbol, side, quantity):
         return order
     except BinanceAPIException as e:
         log.error(f"ERROR placing market order: {e}")
+
         return None
