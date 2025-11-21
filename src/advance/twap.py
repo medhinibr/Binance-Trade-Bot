@@ -54,4 +54,5 @@ if __name__ == "__main__":
     parser.add_argument("chunks", type=int, help="Number of splits")
 
     args = parser.parse_args()
+
     execute_twap(args.symbol, args.side, args.total_amount, args.duration, args.chunks)
