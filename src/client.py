@@ -50,3 +50,4 @@ class BinanceClient:
         except Exception as e:
             log.error(f"Unexpected error: {e}")
             raise e
+
