@@ -16,7 +16,11 @@ The bot supports interaction with Binance’s spot trading system and allows for
 ## Workflow Diagram
 
 The diagram below illustrates the operational flow of the Binance Trade Bot, from initialization to trade execution.
+
+```mermaid
+graph TD;
   
+
 
 
 
