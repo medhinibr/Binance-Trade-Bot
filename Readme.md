@@ -20,7 +20,8 @@ The diagram below illustrates the operational flow of the Binance Trade Bot, fro
 ```mermaid
 graph TD;
     A[Start] --> B{Read Configuration};
-B --> C[Initialize Binance API Client];
+    B --> C[Initialize Binance API Client];
+    C --> D{Verify API Connection};
 
 
 
