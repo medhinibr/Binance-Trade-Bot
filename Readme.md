@@ -14,7 +14,10 @@ The bot supports interaction with Binance’s spot trading system and allows for
 -   **Easily Extensible**: Designed to be easily extended with custom strategies inside the `src/` directory.
 
 ## Workflow Diagram
+
+The diagram below illustrates the operational flow of the Binance Trade Bot, from initialization to trade execution.
   
+
 
 
 
