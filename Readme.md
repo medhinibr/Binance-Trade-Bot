@@ -13,20 +13,8 @@ The bot supports interaction with Binance’s spot trading system and allows for
 -   **Debugging Tools**: Includes a `debug_connect.py` script to verify the API connection and permissions before deploying the bot.
 -   **Easily Extensible**: Designed to be easily extended with custom strategies inside the `src/` directory.
 
+  
 
-## Setup and Installation
-
-### 1. Prerequisites
-
--   Python 3.8 or higher.
--   A Binance Testnet account with API credentials.
-
-### 2. Clone the Repository
-
-```sh
-git clone <your-repo-link>
-
-cd medhini-binance-bot
 
 
 
