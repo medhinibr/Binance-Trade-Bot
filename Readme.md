@@ -2,6 +2,8 @@
 
 A fully automated cryptocurrency trading bot built using the Binance API, designed to execute trades programmatically based on defined strategies. This project provides a clean, modular structure with dedicated components for configuration, client handling, trading logic, and debugging, making it an ideal starting point for developing your own automated trading solutions.
 
+The bot supports interaction with Binance’s spot trading system and allows for easy extension and implementation of custom trading strategies.
+
 ## Features
 
 -   Place **Market** and **Limit** orders.
@@ -23,3 +25,4 @@ A fully automated cryptocurrency trading bot built using the Binance API, design
 git clone <your-repo-link>
 
 cd medhini-binance-bot
+
