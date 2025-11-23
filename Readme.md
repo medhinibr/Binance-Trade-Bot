@@ -1,6 +1,6 @@
-# Binance Futures Trading Bot
+# Binance Trading Bot
 
-This is a command-line interface (CLI) based trading bot for the Binance USDT-M Futures testnet. It supports placing market and limit orders, with robust validation and structured logging.
+A fully automated cryptocurrency trading bot built using the Binance API, designed to execute trades programmatically based on defined strategies. This project provides a clean, modular structure with dedicated components for configuration, client handling, trading logic, and debugging, making it an ideal starting point for developing your own automated trading solutions.
 
 ## Features
 
@@ -21,4 +21,5 @@ This is a command-line interface (CLI) based trading bot for the Binance USDT-M 
 
 ```sh
 git clone <your-repo-link>
+
 cd medhini-binance-bot
