@@ -25,6 +25,8 @@ graph TD;
     D --> E[Fetch Market Data];
     E --> F{Apply Trading Strategy};
     F --> G[Calculate Order Parameters];
+    G --> H{Execute Trade Order};
+
 
 
 
