@@ -24,6 +24,8 @@ graph TD;
     C --> D{Verify API Connection};
     D --> E[Fetch Market Data];
     E --> F{Apply Trading Strategy};
+    F --> G[Calculate Order Parameters];
+
 
 
 
