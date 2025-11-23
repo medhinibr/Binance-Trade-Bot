@@ -26,6 +26,8 @@ graph TD;
     E --> F{Apply Trading Strategy};
     F --> G[Calculate Order Parameters];
     G --> H{Execute Trade Order};
+    H --> I[Log Trade Details];
+
 
 
 
