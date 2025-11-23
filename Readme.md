@@ -4,7 +4,7 @@ A fully automated cryptocurrency trading bot built using the Binance API, design
 
 The bot supports interaction with Binance’s spot trading system and allows for easy extension and implementation of custom trading strategies.
 
-## Features
+## Key Features
 
 -   Place **Market** and **Limit** orders.
 -   Supports both **BUY** and **SELL** sides.
@@ -25,4 +25,5 @@ The bot supports interaction with Binance’s spot trading system and allows for
 git clone <your-repo-link>
 
 cd medhini-binance-bot
+
 
