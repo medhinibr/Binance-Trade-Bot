@@ -6,7 +6,7 @@ The bot supports interaction with Binance’s spot trading system and allows for
 
 ## Key Features
 
--   Place **Market** and **Limit** orders.
+-   **Automated Trading**: Executes trades on Binance automatically using predefined logic in `bot.py`.
 -   Supports both **BUY** and **SELL** sides.
 -   Robust input validation for all parameters.
 -   Structured logging to `bot.log` for all actions, successes, and errors.
@@ -25,5 +25,6 @@ The bot supports interaction with Binance’s spot trading system and allows for
 git clone <your-repo-link>
 
 cd medhini-binance-bot
+
 
 
