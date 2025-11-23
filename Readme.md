@@ -9,7 +9,7 @@ The bot supports interaction with Binance’s spot trading system and allows for
 -   **Automated Trading**: Executes trades on Binance automatically using predefined logic in `bot.py`.
 -   **Modular Architecture**: Cleanly separated files for client management, core bot logic, configuration, debugging, and trade execution.
 -   **Configuration Management**: Easily manage API keys, trade settings, and environment details in a centralized `config.py` file.
--   Structured logging to `bot.log` for all actions, successes, and errors.
+-   **Real-time API Interaction**: Utilizes the official Binance API to fetch live market data and place orders in real-time.
 -   Securely manages API keys using a `.env` file.
 
 ## Setup and Installation
@@ -25,6 +25,7 @@ The bot supports interaction with Binance’s spot trading system and allows for
 git clone <your-repo-link>
 
 cd medhini-binance-bot
+
 
 
 
