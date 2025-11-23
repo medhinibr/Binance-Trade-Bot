@@ -22,6 +22,7 @@ graph TD;
     A[Start] --> B{Read Configuration};
     B --> C[Initialize Binance API Client];
     C --> D{Verify API Connection};
+    D --> E[Fetch Market Data];
 
 
 
