@@ -29,6 +29,10 @@ graph TD;
     H --> I[Log Trade Details];
     I --> E;
 
+## Project Structure## Project Structure
+
+
+
 
 
 
