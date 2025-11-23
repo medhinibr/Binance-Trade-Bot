@@ -28,8 +28,9 @@ graph TD;
     G --> H{Execute Trade Order};
     H --> I[Log Trade Details];
     I --> E;
+```
+## Project Structure
 
-## Project Structure## Project Structure
 
 
 
