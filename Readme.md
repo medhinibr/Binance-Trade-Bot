@@ -33,6 +33,7 @@ graph TD;
 
 The project is organized into a clean and understandable structure to facilitate development and maintenance.
 
+| File / Directory      | Description                                                 |
 
 
 
