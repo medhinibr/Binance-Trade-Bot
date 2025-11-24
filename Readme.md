@@ -40,6 +40,7 @@ The project is organized into a clean and understandable structure to facilitate
 | `client.py`           | A wrapper for the Binance API client.                       |
 | `config.py`           | Stores API keys, trade settings, and other configurations.   |
 | `debug_connect.py`    | Utility script for testing the Binance API connection.       |
+| `requirements`        |
 
 
 
