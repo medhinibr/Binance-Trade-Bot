@@ -115,6 +115,11 @@ python app.py
 
 Alternatively, you can run the core bot logic directly:
 
+```bash
+python bot.py
+```
+
+
 
 
 
