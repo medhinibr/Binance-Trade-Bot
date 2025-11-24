@@ -41,8 +41,9 @@ The project is organized into a clean and understandable structure to facilitate
 | `config.py`           | Stores API keys, trade settings, and other configurations.  |
 | `debug_connect.py`    | Utility script for testing the Binance API connection.      |
 | `requirements`        | A list of required Python dependencies for the project.     |
-| `LICENSE`             |The MIT License file for the project.                        |
-| `Readme.md`           |
+| `LICENSE`             | The MIT License file for the project.                       |
+| `Readme.md`           | The project's README file.                                  |
+
 
 
 
