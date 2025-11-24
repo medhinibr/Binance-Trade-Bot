@@ -45,6 +45,14 @@ The project is organized into a clean and understandable structure to facilitate
 | `Readme.md`           | The project's README file.                                  |
 | `src/`                | A directory for additional modules or custom strategies.    |
 
+## Prerequisites
+
+
+
+
+
+
+
 ## Installation Guide
 
 Follow these steps to set up the Binance Trade Bot on your local machine.
@@ -133,6 +141,7 @@ This project can be extended with additional features to create a more robust tr
 -   **Notifications**: Add alerts via Telegram, Discord, or email to stay informed about the bot's activity.
 -   **GUI Dashboard**: Develop a graphical user interface to monitor the bot's performance and manage settings.
 -   **Backtesting Module**: Create a backtesting module to test trading strategies against historical market data.
+
 
 
 
