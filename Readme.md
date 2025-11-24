@@ -36,6 +36,7 @@ The project is organized into a clean and understandable structure to facilitate
 | File / Directory      | Description                                                 |
 | --------------------- | ----------------------------------------------------------- |
 | `app.py`              | Main entry point of the application.                        |
+| `bot.py`              |
 
 
 
