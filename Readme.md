@@ -78,6 +78,7 @@ venv\Scripts\activate
 
 ### 3. Install Dependencies
 
+Install all the required Python libraries using pip and the `requirements` file:
 
 
 
