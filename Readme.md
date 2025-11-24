@@ -106,6 +106,9 @@ Before starting the bot, it is a good practice to test the API connection to ens
 python debug_connect.py
 ```
 
+### Start Trading
+
+
 
 
 
