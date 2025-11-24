@@ -55,6 +55,8 @@ First, clone the repository to your local machine using Git:
 
 ```bash
 https://github.com/medhinibr/Binance-Trade-Bot
+cd Binance-Trade-Bot
+
 
 
 
