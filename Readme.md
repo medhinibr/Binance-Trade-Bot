@@ -129,6 +129,7 @@ python bot.py
 
 This project can be extended with additional features to create a more robust trading bot. Some potential enhancements include:
 -   **Multiple Trading Strategies**: Implement a variety of trading strategies that can be selected through the configuration.
+-   **Risk Management**: Integrate stop-loss and take-profit mechanisms to manage risk effectively.
 
 
 
