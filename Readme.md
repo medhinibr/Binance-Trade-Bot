@@ -144,6 +144,7 @@ This project can be extended with additional features to create a more robust tr
 Contributions are welcome! If you would like to contribute to this project, please follow these steps:
 
 1.  Fork the repository.
+2.  Create a new branch (`git checkout -b feature/your-feature-name`).
 
 
 
