@@ -80,6 +80,8 @@ venv\Scripts\activate
 
 Install all the required Python libraries using pip and the `requirements` file:
 
+```bash
+
 
 
 
