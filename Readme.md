@@ -90,6 +90,7 @@ Before running the bot, you need to configure your Binance API keys and trading 
 
 | Variable       | Description                                                 |
 | -------------- | ----------------------------------------------------------- |
+| `API_KEY`      | 
 
 
 
