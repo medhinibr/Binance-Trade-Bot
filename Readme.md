@@ -96,6 +96,7 @@ Before running the bot, you need to configure your Binance API keys and trading 
 | `TRADE_AMOUNT` | The amount of the asset to trade in each transaction.       |
 | `TEST_MODE`    | Set to `True` for paper trading, `False` for live trading.  |
 
+## Running the Bot
 
 
 
