@@ -57,6 +57,7 @@ First, clone the repository to your local machine using Git:
 https://github.com/medhinibr/Binance-Trade-Bot
 cd Binance-Trade-Bot
 ```
+
 ### 2. Create a Virtual Environment
 
 It is highly recommended to use a virtual environment to manage the project's dependencies.
@@ -74,6 +75,8 @@ source venv/bin/activate
 python -m venv venv
 venv\Scripts\activate
 ```
+
+### 3. Install Dependencies
 
 
 
