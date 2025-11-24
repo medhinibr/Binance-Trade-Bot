@@ -64,6 +64,7 @@ It is highly recommended to use a virtual environment to manage the project's de
 **On Linux / macOS:**
 
 ```bash
+python -m venv venv
 
 
 
