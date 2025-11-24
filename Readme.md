@@ -47,6 +47,9 @@ The project is organized into a clean and understandable structure to facilitate
 
 ## Installation Guide
 
+Follow these steps to set up the Binance Trade Bot on your local machine.
+
+
 
 
 
