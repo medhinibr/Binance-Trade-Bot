@@ -102,7 +102,9 @@ Once the installation and configuration are complete, you can run the bot.
 
 ### Check Binance Connection
 Before starting the bot, it is a good practice to test the API connection to ensure your keys are valid and have the correct permissions.
-
+```bash
+python debug_connect.py
+```
 
 
 
