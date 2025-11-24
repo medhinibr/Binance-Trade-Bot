@@ -121,6 +121,7 @@ python bot.py
 
 ## Important Notes
 
+-   **API Key Security**: Never commit your `API_KEY` and `SECRET_KEY` to a public repository. Keep them secure and confidential.
 
 
 
