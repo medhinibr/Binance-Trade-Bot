@@ -92,36 +92,7 @@ Before running the bot, you need to configure your Binance API keys and trading 
 | -------------- | ----------------------------------------------------------- |
 | `API_KEY`      |  Your Binance API key.                                      |
 | `SECRET_KEY`   | Your Binance secret key.                                    |
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+| `TRADE_SYMBOL` |
 
 
 
