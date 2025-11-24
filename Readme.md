@@ -127,5 +127,6 @@ python bot.py
 
 ## Future Enhancements
 
+This project can be extended with additional features to create a more robust trading bot. Some potential enhancements include:
 
 
