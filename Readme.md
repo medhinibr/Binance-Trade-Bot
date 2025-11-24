@@ -107,6 +107,7 @@ python debug_connect.py
 ```
 
 ### Start Trading
+To start the main application and begin trading, run the `app.py` script.
 
 
 
