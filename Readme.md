@@ -150,6 +150,7 @@ Contributions are welcome! If you would like to contribute to this project, plea
 5.  Open a Pull Request.
 
 ## License
+This project is released under the MIT License. See the [LICENSE](LICENSE) file for more details.
 
 
 
