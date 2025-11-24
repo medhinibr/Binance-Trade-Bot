@@ -122,6 +122,7 @@ python bot.py
 ## Important Notes
 
 -   **API Key Security**: Never commit your `API_KEY` and `SECRET_KEY` to a public repository. Keep them secure and confidential.
+-   **Test Mode**: Always use `TEST_MODE = True` to test your strategies and configurations without risking real funds.
 
 
 
