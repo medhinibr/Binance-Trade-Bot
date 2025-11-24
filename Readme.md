@@ -59,6 +59,8 @@ cd Binance-Trade-Bot
 ```
 ### 2. Create a Virtual Environment
 
+It is highly recommended to use a virtual environment to manage the project's dependencies.
+
 
 
 
