@@ -43,6 +43,7 @@ The project is organized into a clean and understandable structure to facilitate
 | `requirements`        | A list of required Python dependencies for the project.     |
 | `LICENSE`             | The MIT License file for the project.                       |
 | `Readme.md`           | The project's README file.                                  |
+| `src/`                |
 
 
 
