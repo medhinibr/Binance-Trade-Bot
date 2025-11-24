@@ -65,6 +65,7 @@ It is highly recommended to use a virtual environment to manage the project's de
 
 ```bash
 python -m venv venv
+source venv/bin/activate
 
 
 
