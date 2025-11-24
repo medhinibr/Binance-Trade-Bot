@@ -100,6 +100,17 @@ Before running the bot, you need to configure your Binance API keys and trading 
 
 Once the installation and configuration are complete, you can run the bot.
 
+Of course. Here is the complete raw Markdown for all the sections you requested, from "Running the Bot" to "Future Enhancements."
+You can copy the entire block of text below and paste it directly into your README.md file editor.
+code
+Markdown
+---
+
+## Running the Bot
+
+Once the installation and configuration are complete, you can run the bot.
+
+### Check Binance Connection
 
 
 
