@@ -88,6 +88,7 @@ pip install -r requirements
 
 Before running the bot, you need to configure your Binance API keys and trading parameters. Edit the `config.py` file with your specific details.
 
+| Variable       | Description                                                 |
 
 
 
