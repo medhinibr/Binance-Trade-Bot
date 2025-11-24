@@ -45,6 +45,7 @@ The project is organized into a clean and understandable structure to facilitate
 | `Readme.md`           | The project's README file.                                  |
 | `src/`                | A directory for additional modules or custom strategies.    |
 
+## Installation Guide
 
 
 
