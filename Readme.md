@@ -123,6 +123,7 @@ python bot.py
 
 -   **API Key Security**: Never commit your `API_KEY` and `SECRET_KEY` to a public repository. Keep them secure and confidential.
 -   **Test Mode**: Always use `TEST_MODE = True` to test your strategies and configurations without risking real funds.
+-   **Disclaimer**: This project is intended for educational purposes only. Cryptocurrency trading involves a high level of risk, and you should be fully aware of the potential for losses.
 
 
 
