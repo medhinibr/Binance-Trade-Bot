@@ -94,6 +94,8 @@ Before running the bot, you need to configure your Binance API keys and trading 
 | `SECRET_KEY`   | Your Binance secret key.                                    |
 | `TRADE_SYMBOL` | The trading pair you want the bot to trade (e.g., "BTCUSDT").|
 | `TRADE_AMOUNT` | The amount of the asset to trade in each transaction.       |
+| `TEST_MODE`    |
+
 
 
 
