@@ -141,7 +141,7 @@ This project can be extended with additional features to create a more robust tr
 -   **Backtesting Module**: Create a backtesting module to test trading strategies against historical market data.
 
 ## Contributing
-
+Contributions are welcome! If you would like to contribute to this project, please follow these steps:
 
 
 
