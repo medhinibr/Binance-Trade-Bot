@@ -46,7 +46,7 @@ The project is organized into a clean and understandable structure to facilitate
 | `src/`                | A directory for additional modules or custom strategies.    |
 
 ## Prerequisites
-
+Before you begin, ensure you have the following installed on your system:
 
 
 
@@ -141,6 +141,7 @@ This project can be extended with additional features to create a more robust tr
 -   **Notifications**: Add alerts via Telegram, Discord, or email to stay informed about the bot's activity.
 -   **GUI Dashboard**: Develop a graphical user interface to monitor the bot's performance and manage settings.
 -   **Backtesting Module**: Create a backtesting module to test trading strategies against historical market data.
+
 
 
 
