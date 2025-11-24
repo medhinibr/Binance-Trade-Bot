@@ -38,8 +38,9 @@ The project is organized into a clean and understandable structure to facilitate
 | `app.py`              | Main entry point of the application.                        |
 | `bot.py`              | Contains the core trading logic and strategy implementation.|
 | `client.py`           | A wrapper for the Binance API client.                       |
-| `config.py`           |Stores API keys, trade settings, and other configurations.   |
-| `debug_connect.py`    |
+| `config.py`           | Stores API keys, trade settings, and other configurations.   |
+| `debug_connect.py`    | Utility script for testing the Binance API connection.       |
+
 
 
 
