@@ -113,6 +113,8 @@ To start the main application and begin trading, run the `app.py` script.
 python app.py
 ```
 
+Alternatively, you can run the core bot logic directly:
+
 
 
 
