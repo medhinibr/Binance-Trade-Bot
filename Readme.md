@@ -119,6 +119,8 @@ Alternatively, you can run the core bot logic directly:
 python bot.py
 ```
 
+## Important Notes
+
 
 
 
