@@ -51,6 +51,7 @@ Follow these steps to set up the Binance Trade Bot on your local machine.
 
 ### 1. Clone the Repository
 
+First, clone the repository to your local machine using Git:
 
 
 
