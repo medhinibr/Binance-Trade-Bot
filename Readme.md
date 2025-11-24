@@ -49,6 +49,9 @@ The project is organized into a clean and understandable structure to facilitate
 
 Follow these steps to set up the Binance Trade Bot on your local machine.
 
+### 1. Clone the Repository
+
+
 
 
 
