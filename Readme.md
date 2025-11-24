@@ -37,6 +37,8 @@ The project is organized into a clean and understandable structure to facilitate
 | --------------------- | ----------------------------------------------------------- |
 | `app.py`              | Main entry point of the application.                        |
 | `bot.py`              | Contains the core trading logic and strategy implementation.|
+| `client.py`           |
+
 
 
 
