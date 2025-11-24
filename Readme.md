@@ -143,6 +143,8 @@ This project can be extended with additional features to create a more robust tr
 ## Contributing
 Contributions are welcome! If you would like to contribute to this project, please follow these steps:
 
+1.  Fork the repository.
+
 
 
 
