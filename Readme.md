@@ -98,6 +98,8 @@ Before running the bot, you need to configure your Binance API keys and trading 
 
 ## Running the Bot
 
+Once the installation and configuration are complete, you can run the bot.
+
 
 
 
