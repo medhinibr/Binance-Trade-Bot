@@ -131,6 +131,7 @@ This project can be extended with additional features to create a more robust tr
 -   **Multiple Trading Strategies**: Implement a variety of trading strategies that can be selected through the configuration.
 -   **Risk Management**: Integrate stop-loss and take-profit mechanisms to manage risk effectively.
 -   **Notifications**: Add alerts via Telegram, Discord, or email to stay informed about the bot's activity.
+-   **GUI Dashboard**: Develop a graphical user interface to monitor the bot's performance and manage settings.
 
 
 
