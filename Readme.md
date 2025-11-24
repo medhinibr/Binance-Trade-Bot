@@ -42,6 +42,7 @@ The project is organized into a clean and understandable structure to facilitate
 | `debug_connect.py`    | Utility script for testing the Binance API connection.      |
 | `requirements`        | A list of required Python dependencies for the project.     |
 | `LICENSE`             |The MIT License file for the project.                        |
+| `Readme.md`           |
 
 
 
