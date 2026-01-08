@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinity Trade - Professional Trading Platform</title>
+
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- TradingView Widget -->
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Recharts -->
+    <script src="https://unpkg.com/recharts/umd/Recharts.js"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: #f4f6f8;
+            color: #333;
+        }
+
+        .tab-active {
+            border-bottom: 2px solid #ff5722;
+            color: #ff5722;
+            font-weight: 600;
+        }
+
+        .text-up {
+            color: #008c45;
+        }
+
+        .text-down {
+            color: #eb3b3b;
+        }
+
+        .bg-up-light {
+            background-color: #e6f5ec;
+        }
+
+        .bg-down-light {
+            background-color: #fdecec;
+        }
+
+        .btn-buy {
+            background-color: #4184f3;
+            color: white;
+        }
+
+        .btn-sell {
+            background-color: #ff5722;
+            color: white;
+        }
+
+        .sidebar-item:hover {
+            background-color: #e3e6ea;
+        }
+
+        .sidebar {
+            width: 320px;
+            border-right: 1px solid #ddd;
+            background: #fff;
+        }
+
+        .content {
+            background: #f4f6f8;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #aaa;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root" class="h-screen flex flex-col"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        // --- CONSTANTS & MOCK DATA (Fallbacks) ---
+        const MARKET_INDICES = [
+            { name: 'NIFTY 50', symbol: '^NSEI', value: 24350.50, change: 125.40, pChange: 0.55 },
+            { name: 'SENSEX', symbol: '^BSESN', value: 80100.20, change: 350.10, pChange: 0.45 },
+            { name: 'BANK NIFTY', symbol: '^NSEBANK', value: 52400.00, change: -45.00, pChange: -0.12 }
+        ];
+
+        // Watchlist data with correct Yahoo Finance tickers for India (.NS) and MCX/Forex
+        const WATCHLIST = [
+            { symbol: 'RELIANCE.NS', name: 'Reliance Ind', type: 'EQUITY' },
+            { symbol: 'TCS.NS', name: 'TCS', type: 'EQUITY' },
+            { symbol: 'HDFCBANK.NS', name: 'HDFC Bank', type: 'EQUITY' },
+            { symbol: 'INFY.NS', name: 'Infosys', type: 'EQUITY' },
+            { symbol: 'MARUTI.NS', name: 'Maruti Suzuki', type: 'EQUITY' },
+            { symbol: 'SBIN.NS', name: 'SBI', type: 'EQUITY' },
+            { symbol: 'GC=F', name: 'Gold Futures', type: 'COMMODITY' },
+            { symbol: 'SI=F', name: 'Silver Futures', type: 'COMMODITY' },
+            { symbol: 'CL=F', name: 'Crude Oil', type: 'COMMODITY' },
+            { symbol: 'INR=X', name: 'USD/INR', type: 'CURRENCY' }
+        ];
+
+        const MUTUAL_FUNDS = [
+            { id: 1, name: "Quant Small Cap", nav: 245.30, returns: 45.3, risk: "High", type: "Equity" },
+            { id: 2, name: "Parag Parikh Flexi Cap", nav: 68.45, returns: 22.1, risk: "Moderate", type: "Equity" },
+            { id: 3, name: "HDFC Balanced Advantage", nav: 345.10, returns: 15.6, risk: "Low", type: "Hybrid" }
+        ];
+
+        const IPOS = [
+            { id: 1, name: "Nova Agri Tech", price: "41-43", date: "Jan 22-24", status: "Open", sub: "54x" },
+            { id: 2, name: "Epack Durable", price: "218-230", date: "Jan 23-25", status: "Upcoming", sub: "-" }
+        ];
+
+        // --- API HELPERS ---
+        const fetchQuote = async (symbol) => {
+            try {
+                // Call local backend proxy
+                const res = await fetch(`/api/quote?symbol=${symbol}`);
+                if (!res.ok) throw new Error('API Error');
+                return await res.json();
+            } catch (e) {
+                // MOCK FALLBACK for visual demo if backend not running/fails
+                return {
+                    symbol,
+                    price: (Math.random() * 2000 + 100).toFixed(2),
+                    change: (Math.random() * 4 - 2).toFixed(2),
+                    prev_close: 0,
+                    volume: Math.floor(Math.random() * 100000)
+                };
+            }
+        };
+
+        const batchFetchQuotes = async (symbols) => {
+            try {
+                const res = await fetch(`/api/batch_quotes?symbols=${symbols.join(',')}`);
+                if (!res.ok) throw new Error("Failed");
+                const data = await res.json();
+                return data.data; // array
+            } catch (e) {
+                return symbols.map(s => ({
+                    symbol: s,
+                    price: (Math.random() * 1000 + 500).toFixed(2),
+                    change: (Math.random() * 5 - 2.5).toFixed(2)
+                }));
+            }
+        };
+
+        // --- COMPONENTS ---
+
+        // 1. Sidebar Watchlist
+        const MarketWatch = ({ stocks, selectedStock, onSelect }) => {
+            return (
+                <div className="sidebar h-full flex flex-col shadow-sm z-10">
+                    <div className="p-4 border-b flex justify-between items-center bg-white sticky top-0">
+                        <div className="relative w-full">
+                            <input type="text" placeholder="Search & Add eg: INFY, GOLD" className="w-full pl-8 pr-4 py-2 border rounded-md text-sm focus:outline-none focus:border-blue-500 bg-gray-50" />
+                            <i className="fas fa-search absolute left-3 top-3 text-gray-400 text-xs"></i>
+                        </div>
+                    </div>
+                    <div className="flex-1 overflow-y-auto w-full">
+                        {stocks.map(stock => (
+                            <div key={stock.symbol} onClick={() => onSelect(stock.symbol)}
+                                className={`p-3 border-b cursor-pointer hover:bg-gray-50 flex justify-between items-center transition-all ${selectedStock === stock.symbol ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}>
+                                <div>
+                                    <div className={`text-sm font-semibold ${stock.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        {stock.symbol.replace('.NS', '')} <span className="text-gray-400 text-xs font-normal">NSE</span>
+                                    </div>
+                                    <div className="text-xs text-gray-500 mt-1">{stock.type || 'EQUITY'}</div>
+                                </div>
+                                <div className="text-right">
+                                    <div className={`text-sm font-mono ${stock.change >= 0 ? "text-up" : "text-down"}`}>
+                                        {parseFloat(stock.price).toFixed(2)}
+                                    </div>
+                                    <div className="text-xs text-gray-400 flex items-center justify-end gap-1">
+                                        {stock.change > 0 && <i className="fas fa-caret-up text-green-500"></i>}
+                                        {stock.change < 0 && <i className="fas fa-caret-down text-red-500"></i>}
+                                        {stock.change}%
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="p-3 bg-gray-50 border-t text-xs text-center text-gray-500">
+                        Market Data powered by Yahoo Finance
+                    </div>
+                </div>
+            );
+        };
+
+        // 2. Chart Component (TradingView)
+        const Chart = ({ symbol }) => {
+            useEffect(() => {
+                // Ensure symbol matches TradingView format
+                let tvSymbol = symbol.replace('.NS', '');
+                if (symbol.includes('=F')) tvSymbol = symbol.replace('=F', ''); // Basic cleanup for futures
+                if (symbol.includes('.NS')) tvSymbol = "NSE:" + tvSymbol; // Prefix for India
+                else if (symbol === 'GC=F') tvSymbol = "MCX:GOLD"; // Smart map
+                else if (symbol === 'INR=X') tvSymbol = "FX_IDC:USDINR";
+                else tvSymbol = "NSE:" + tvSymbol; // Default to NSE
+
+                if (window.TradingView) {
+                    new window.TradingView.widget({
+                        "width": "100%",
+                        "height": "100%",
+                        "symbol": tvSymbol,
+                        "interval": "D",
+                        "timezone": "Asia/Kolkata",
+                        "theme": "light",
+                        "style": "1",
+                        "locale": "in",
+                        "toolbar_bg": "#f1f3f6",
+                        "enable_publishing": false,
+                        "allow_symbol_change": true,
+                        "container_id": "tradingview_chart"
+                    });
+                }
+            }, [symbol]);
+            return <div id="tradingview_chart" className="w-full h-full"></div>;
+        };
+
+        // 3. Trading Panel (Buy/Sell)
+        const TradePanel = ({ stock, onExecute }) => {
+            const [side, setSide] = useState('BUY');
+            const [qty, setQty] = useState(1);
+            const [product, setProduct] = useState('MIS'); // MIS (Intraday) vs CNC (Delivery)
+            const [orderType, setOrderType] = useState('MARKET');
+            const [price, setPrice] = useState(stock.price);
+
+            return (
+                <div className="bg-white p-6 border-l w-80 flex flex-col h-full shadow-lg z-20">
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="font-bold text-lg">{stock.symbol.replace('.NS', '')}</h2>
+                        <div className="text-sm">
+                            <span className="text-gray-500">LTP </span>
+                            <span className="font-mono font-bold">{stock.price}</span>
+                        </div>
+                    </div>
+
+                    <div className="flex bg-gray-100 p-1 rounded-md mb-6">
+                        <button onClick={() => setSide('BUY')} className={`flex-1 py-2 text-sm font-semibold rounded ${side === 'BUY' ? 'bg-blue-600 text-white shadow' : 'text-gray-600 hover:bg-gray-200'}`}>BUY</button>
+                        <button onClick={() => setSide('SELL')} className={`flex-1 py-2 text-sm font-semibold rounded ${side === 'SELL' ? 'bg-red-500 text-white shadow' : 'text-gray-600 hover:bg-gray-200'}`}>SELL</button>
+                    </div>
+
+                    <div className="space-y-4 flex-1">
+                        <div>
+                            <label className="text-xs text-gray-500 uppercase font-bold">Product</label>
+                            <div className="flex gap-4 mt-2">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="prod" checked={product === 'MIS'} onChange={() => setProduct('MIS')} />
+                                    <div className="text-sm">
+                                        <div className="font-bold">Intraday</div>
+                                        <div className="text-xs text-gray-400">MIS</div>
+                                    </div>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="prod" checked={product === 'CNC'} onChange={() => setProduct('CNC')} />
+                                    <div className="text-sm">
+                                        <div className="font-bold">Longterm</div>
+                                        <div className="text-xs text-gray-400">CNC</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="text-xs text-gray-500 uppercase font-bold">Quantity</label>
+                            <input type="number" value={qty} onChange={e => setQty(e.target.value)} className="w-full mt-1 p-2 border rounded font-mono text-sm" />
+                        </div>
+
+                        <div>
+                            <label className="text-xs text-gray-500 uppercase font-bold">Order Type</label>
+                            <select value={orderType} onChange={e => setOrderType(e.target.value)} className="w-full mt-1 p-2 border rounded text-sm bg-white">
+                                <option value="MARKET">Market</option>
+                                <option value="LIMIT">Limit</option>
+                                <option value="SL">SL</option>
+                            </select>
+                        </div>
+
+                        {orderType === 'LIMIT' && (
+                            <div>
+                                <label className="text-xs text-gray-500 uppercase font-bold">Price</label>
+                                <input type="number" value={price} onChange={e => setPrice(e.target.value)} className="w-full mt-1 p-2 border rounded font-mono text-sm" />
+                            </div>
+                        )}
+
+                        <div className="pt-4 border-t mt-4">
+                            <div className="flex justify-between text-sm mb-2">
+                                <span className="text-gray-500">Margin Req</span>
+                                <span className="font-bold">₹{product === 'MIS' ? (stock.price * qty * 0.2).toFixed(2) : (stock.price * qty).toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">Limit Price</span>
+                                <span className="font-bold">₹{stock.price}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button className={`w-full py-3 mt-6 rounded font-bold text-white shadow-lg ${side === 'BUY' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-500 hover:bg-red-600'}`}>
+                        {side}
+                    </button>
+                    <div className="text-center mt-3 text-xs text-gray-400">
+                        <i className="fas fa-lock mr-1"></i> Secure Connection
+                    </div>
+                </div>
+            );
+        };
+
+        // 4. Main Views (IPO, MF, etc.)
+        const DashboardView = ({ activeIndex }) => (
+            <div className="p-8 max-w-6xl mx-auto">
+                <div className="grid grid-cols-3 gap-6 mb-8">
+                    {MARKET_INDICES.map(idx => (
+                        <div key={idx.symbol} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                            <div className="text-xs text-gray-500 font-bold mb-1">{idx.name}</div>
+                            <div className="flex items-end gap-2">
+                                <div className="text-2xl font-bold font-mono">{idx.value.toLocaleString()}</div>
+                                <div className={`text-sm font-bold mb-1 ${idx.change >= 0 ? "text-green-600" : "text-red-500"}`}>
+                                    {idx.change > 0 && '+'} {idx.change} ({idx.pChange}%)
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="bg-white rounded-lg shadow-sm border p-6 min-h-[400px] flex items-center justify-center text-gray-400">
+                    <div className="text-center">
+                        <i className="fas fa-chart-line text-4xl mb-4 text-gray-200"></i>
+                        <h3 className="text-lg font-medium text-gray-600">Your Holdings are Empty</h3>
+                        <p className="text-sm mt-2">Start investing in Stocks, Mutual Funds or IPOs to see your portfolio here.</p>
+                        <button className="mt-6 px-6 py-2 bg-blue-600 text-white rounded font-medium hover:bg-blue-700">Start Investing</button>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const MutualFundsView = () => (
+            <div className="p-8 max-w-6xl mx-auto">
+                <h2 className="text-2xl font-bold mb-6 text-gray-800">Mutual Funds</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {MUTUAL_FUNDS.map(mf => (
+                        <div key={mf.id} className="bg-white p-6 rounded-lg border hover:shadow-md transition-shadow">
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="bg-blue-50 w-10 h-10 rounded-full flex items-center justify-center text-blue-600"><i className="fas fa-piggy-bank"></i></div>
+                                <span className="bg-gray-100 text-xs px-2 py-1 rounded font-medium">{mf.type}</span>
+                            </div>
+                            <h3 className="font-bold text-lg mb-1">{mf.name}</h3>
+                            <div className="text-gray-500 text-xs mb-4">{mf.risk} Risk • Equity</div>
+
+                            <div className="flex justify-between items-end border-t pt-4">
+                                <div>
+                                    <div className="text-xs text-gray-400">3Y Returns</div>
+                                    <div className="text-lg font-bold text-green-600">{mf.returns}%</div>
+                                </div>
+                                <button className="px-4 py-2 bg-blue-50 text-blue-600 font-bold rounded text-sm hover:bg-blue-100">Invest</button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* SIP Calculator Snippet */}
+                <div className="mt-12 bg-white p-8 rounded-lg border">
+                    <h3 className="text-lg font-bold mb-4">SIP Calculator</h3>
+                    <div className="flex gap-4 items-center">
+                        <input type="range" className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+                        <span className="font-bold font-mono">₹5,000/mo</span>
+                    </div>
+                    <div className="mt-2 text-xs text-gray-400">Projected returns calculated at 12% p.a.</div>
+                </div>
+            </div>
+        );
+
+        const IPOView = () => (
+            <div className="p-8 max-w-6xl mx-auto">
+                <h2 className="text-2xl font-bold mb-6 text-gray-800">Upcoming IPOs</h2>
+                <div className="bg-white rounded-lg border overflow-hidden">
+                    <table className="w-full text-left">
+                        <thead className="bg-gray-50 text-gray-500 text-xs uppercase font-semibold border-b">
+                            <tr>
+                                <th className="p-4">Company</th>
+                                <th className="p-4">Price Range</th>
+                                <th className="p-4">Date</th>
+                                <th className="p-4">Status</th>
+                                <th className="p-4 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y">
+                            {IPOS.map(ipo => (
+                                <tr key={ipo.id} className="hover:bg-gray-50">
+                                    <td className="p-4">
+                                        <div className="font-bold text-gray-800">{ipo.name}</div>
+                                        <div className="text-xs text-gray-500">Subscription: {ipo.sub}</div>
+                                    </td>
+                                    <td className="p-4 font-mono">₹{ipo.price}</td>
+                                    <td className="p-4 text-sm">{ipo.date}</td>
+                                    <td className="p-4">
+                                        <span className={`px-2 py-1 rounded text-xs font-bold ${ipo.status === 'Open' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                                            {ipo.status}
+                                        </span>
+                                    </td>
+                                    <td className="p-4 text-right">
+                                        <button className={`px-4 py-1.5 rounded text-sm font-bold ${ipo.status === 'Open' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>Apply</button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        );
+
+        const App = () => {
+            const [activeTab, setActiveTab] = useState('DASHBOARD');
+            const [selectedStock, setSelectedStock] = useState('RELIANCE.NS');
+            const [stockData, setStockData] = useState([]);
+            const [currentQuote, setCurrentQuote] = useState(null);
+
+            // Fetch Watchlist
+            useEffect(() => {
+                const fetchAll = async () => {
+                    const symbols = WATCHLIST.map(w => w.symbol);
+                    const data = await batchFetchQuotes(symbols);
+                    // merge with static meta
+                    const merged = data.map(d => {
+                        const meta = WATCHLIST.find(w => w.symbol === d.symbol);
+                        return { ...d, ...meta };
+                    });
+                    setStockData(merged);
+                };
+                fetchAll();
+                // Poll every 10s
+                const interval = setInterval(fetchAll, 10000);
+                return () => clearInterval(interval);
+            }, []);
+
+            // Fetch Current Selected Stock details
+            useEffect(() => {
+                if (!selectedStock) return;
+                const found = stockData.find(s => s.symbol === selectedStock);
+                if (found) setCurrentQuote(found);
+                else {
+                    fetchQuote(selectedStock).then(setCurrentQuote);
+                }
+            }, [selectedStock, stockData]);
+
+            // Tabs config
+            const MENU = [
+                { id: 'DASHBOARD', label: 'Dashboard', icon: 'fas fa-th-large' },
+                { id: 'ORDERS', label: 'Orders', icon: 'fas fa-book' },
+                { id: 'HOLDINGS', label: 'Holdings', icon: 'fas fa-briefcase' },
+                { id: 'POSITIONS', label: 'Positions/F&O', icon: 'fas fa-chart-line' },
+                { id: 'MF', label: 'Mutual Funds', icon: 'fas fa-piggy-bank' },
+                { id: 'IPO', label: 'IPO', icon: 'fas fa-rocket' },
+            ];
+
+            return (
+                <div className="flex h-screen w-full">
+                    {/* 1. Main Navigation (Top/Left Hybrid) */}
+                    <div className="w-[80px] bg-white border-r flex flex-col items-center py-6 shadow-md z-30">
+                        <div className="text-2xl text-blue-600 mb-8"><i className="fas fa-infinity"></i></div>
+
+                        <div className="space-y-6 flex flex-col w-full">
+                            {MENU.map(item => (
+                                <div key={item.id} onClick={() => setActiveTab(item.id)}
+                                    className={`cursor-pointer flex flex-col items-center gap-1 group w-full py-2 border-l-4 ${activeTab === item.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}>
+                                    <i className={`${item.icon} text-xl group-hover:scale-110 transition-transform`}></i>
+                                    <span style={{ fontSize: '10px' }} className="font-semibold">{item.label}</span>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="mt-auto mb-4">
+                            <div className="w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm border-2 border-white shadow">
+                                V
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 2. Layout Logic */}
+                    {['DASHBOARD', 'ORDERS', 'HOLDINGS', 'POSITIONS'].includes(activeTab) ? (
+                        <>
+                            {/* Watchlist Sidebar */}
+                            <div className="w-[350px] flex-shrink-0">
+                                <MarketWatch stocks={stockData} selectedStock={selectedStock} onSelect={setSelectedStock} />
+                            </div>
+
+                            {/* Main Trading Area */}
+                            <div className="flex-1 flex flex-col min-w-0 bg-white">
+                                {/* Header */}
+                                <div className="h-14 border-b flex items-center px-6 justify-between bg-white z-20 shadow-sm">
+                                    <div className="flex gap-6 text-sm font-semibold">
+                                        <span>NIFTY 50 <span className="text-green-600 ml-2">24,350.50 (+0.55%)</span></span>
+                                        <span>SENSEX <span className="text-green-600 ml-2">80,100.20 (+0.45%)</span></span>
+                                    </div>
+                                    <div className="flex gap-4">
+                                        <button className="text-gray-500 hover:text-blue-600"><i className="fas fa-bell"></i></button>
+                                        <button className="text-gray-500 hover:text-blue-600"><i className="fas fa-cog"></i></button>
+                                    </div>
+                                </div>
+
+                                {/* Content */}
+                                <div className="flex-1 relative flex">
+                                    <div className="flex-1 relative">
+                                        {/* Chart & Order Window */}
+                                        <Chart symbol={selectedStock} />
+                                    </div>
+
+                                    {/* Order Panel (Right Side) */}
+                                    {currentQuote && <TradePanel stock={currentQuote} />}
+                                </div>
+
+                                {/* Bottom Analytics Bar */}
+                                <div className="h-48 border-t bg-white p-4 overflow-y-auto">
+                                    <div className="text-xs font-bold text-gray-500 mb-2 uppercase border-b pb-2">Your Positions (Day)</div>
+                                    <table className="w-full text-left text-sm">
+                                        <thead className="text-gray-400 text-xs">
+                                            <tr>
+                                                <th className="font-normal">Instrument</th>
+                                                <th className="font-normal">Qty</th>
+                                                <th className="font-normal">Avg. Price</th>
+                                                <th className="font-normal">LTP</th>
+                                                <th className="font-normal text-right">P&L</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="font-mono text-xs">
+                                            <tr className="border-b">
+                                                <td className="py-2 text-blue-600 font-bold">TCS</td>
+                                                <td className="py-2">10</td>
+                                                <td className="py-2">3840.00</td>
+                                                <td className="py-2">3842.50</td>
+                                                <td className="py-2 text-right text-green-600">+25.00</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        // Full Screen Views (MF, IPO)
+                        <div className="flex-1 overflow-y-auto bg-gray-50">
+                            <div className="h-16 bg-white border-b sticky top-0 px-8 flex items-center justify-between shadow-sm z-20">
+                                <h1 className="text-xl font-bold uppercase text-gray-700">{activeTab.replace('_', ' ')}</h1>
+                                <div className="text-sm font-semibold text-gray-600">
+                                    Balance: <span className="text-green-600 font-mono">₹1,00,000.00</span>
+                                </div>
+                            </div>
+                            {activeTab === 'MF' && <MutualFundsView />}
+                            {activeTab === 'IPO' && <IPOView />}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>
