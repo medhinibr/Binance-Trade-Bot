@@ -1,178 +1,446 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory
-import sys
+from flask import Flask, jsonify, request, send_from_directory
+import random
+from datetime import datetime
+import threading
+import time
 import os
 
-# Add parent directory to path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Load .env manually from current directory
+env_path = os.path.join(os.path.dirname(__file__), '.env')
+try:
+    with open(env_path, 'r') as f:
+        for line in f:
+            if '=' in line:
+                k, v = line.strip().split('=', 1)
+                os.environ[k] = v.strip().strip('"') # Handle quotes if present
+except: pass
 
-from src.client import BinanceClient
-from src.core.market_orders import place_market_order
-from src.core.limit_orders import place_limit_order
+app = Flask(__name__, static_folder='platform', static_url_path='')
 
-app = Flask(__name__)
-app.secret_key = 'supersecretkey'  # Required for session/flash if used, but here we pass args
+@app.route('/api/config')
+def get_config():
+    return jsonify({
+        "firebase": {
+            "apiKey": os.environ.get("FIREBASE_API_KEY", "your_api_key"),
+            "authDomain": "futurex-trading-bcd05.firebaseapp.com",
+            "projectId": "futurex-trading-bcd05",
+            "storageBucket": "futurex-trading-bcd05.firebasestorage.app",
+            "messagingSenderId": "22335494160",
+            "appId": "1:22335494160:web:c292b4f13736785aa9d295",
+            "measurementId": "G-SBEMZN69SZ"
+        }
+    })
 
-# Global state for environment (simple toggle)
-IS_TESTNET = False
+# MOCK DATA
+mock_defaults = {
+    # Equities
+    'RELIANCE.NS': 2450.00, 'TCS.NS': 3240.00, 'HDFCBANK.NS': 1650.00,
+    'INFY.NS': 1420.00, 'SBIN.NS': 580.00, 'TATAMOTORS.NS': 980.00,
+    'ITC.NS': 430.00, 'ICICIBANK.NS': 950.00,
+    
+    # F&O - Futures
+    'NIFTY 25OCT FUT': 19650.00,
+    'BANKNIFTY 25OCT FUT': 44500.00,
+    
+    # F&O - Options (Nifty)
+    'NIFTY 19500 CE': 145.50,
+    'NIFTY 19500 PE': 85.20,
+    'NIFTY 19600 CE': 88.00,
+    'NIFTY 19600 PE': 120.50,
+    
+    # F&O - Options (BankNifty)
+    'BANKNIFTY 44000 CE': 320.00,
+    'BANKNIFTY 44000 PE': 180.00,
+    
+    # COMMODITIES (MCX)
+    'GOLD 05OCT FUT': 59500.00,
+    'SILVER 05SEP FUT': 74200.00,
+    'CRUDEOIL 19SEP FUT': 7150.00,
+    
+    # CURRENCY (CDS)
+    'USDINR 27SEP FUT': 83.15,
+    'EURINR 27SEP FUT': 89.40,
+    'GBPINR 27SEP FUT': 104.50,
+}
 
-def get_client():
-    try:
-        b_client = BinanceClient(testnet=IS_TESTNET)
-        return b_client.client, None
-    except Exception as e:
-        error_msg = str(e)
-        if "Invalid API-key" in error_msg:
-            error_msg = "Invalid API Key or Permissions. Please check your .env file and ensure you are using the correct keys for the selected environment (Testnet vs Live)."
-        return None, error_msg
+# --- STATE ---
+PAPER_STATE = {
+    "funds": 1000000.00,
+    "holdings": [ 
+        {"symbol": "TCS.NS", "qty": 10, "avg": 3200.00, "ltp": 3250.00, "type": "CNC", "value": 32500, "pnl": 500, "pnl_pct": 1.5}, 
+    ],
+    "positions": {}, 
+    "orders": [],
+    "transactions": [
+        {"id": 1, "time": "2023-10-01 10:00:23", "desc": "Account Opened", "type": "SYSTEM", "amount": 0, "bal": 0},
+        {"id": 2, "time": "2023-10-01 10:05:45", "desc": "Welcome Bonus Funds", "type": "DEPOSIT", "amount": 1000000.00, "bal": 1000000.00}
+    ]
+}
+
+#  INVESTMENT MOCK DATA 
+MOCK_BASKETS = [
+    {
+        "id": "b1", "name": "IT Giants", "desc": "Top 3 Indian IT companies", "min_amt": 5000, 
+        "stocks": [{"symbol": "TCS.NS", "weight": "40%"}, {"symbol": "INFY.NS", "weight": "35%"}, {"symbol": "WIPRO.NS", "weight": "25%"}]
+    },
+    {
+        "id": "b2", "name": "Banking Titans", "desc": "Leading private sector banks", "min_amt": 8000,
+        "stocks": [{"symbol": "HDFCBANK.NS", "weight": "50%"}, {"symbol": "ICICIBANK.NS", "weight": "50%"}]
+    },
+    {
+        "id": "b3", "name": "EV Future", "desc": "Companies driving the EV revolution", "min_amt": 3500,
+        "stocks": [{"symbol": "TATAMOTORS.NS", "weight": "60%"}, {"symbol": "RELIANCE.NS", "weight": "40%"}]
+    }
+]
+
+MOCK_IPOS = [
+    {"name": "Tata Technologies", "price_band": "475-500", "status": "OPEN", "close_date": "18 Sep"},
+    {"name": "Mamaearth", "price_band": "308-324", "status": "UPCOMING", "close_date": "25 Sep"},
+    {"name": "IdeaForge", "price_band": "638-672", "status": "CLOSED", "close_date": "10 Aug"}
+]
+
+MOCK_MFS = [
+    {"name": "HDFC Mid-Cap Opportunities", "nav": 124.5, "cagr_3y": "28.5%", "min_sip": 500},
+    {"name": "SBI Small Cap Fund", "nav": 156.8, "cagr_3y": "32.1%", "min_sip": 500},
+    {"name": "Parag Parikh Flexi Cap", "nav": 65.4, "cagr_3y": "22.4%", "min_sip": 1000},
+    {"name": "Axis Bluechip Fund", "nav": 52.1, "cagr_3y": "14.2%", "min_sip": 500}
+]
+
+MOCK_BONDS = [
+    {"name": "SGB 2023-24 Series II", "yield": "2.50% pa", "price": 5923, "maturity": "2031"},
+    {"name": "7.54% GS 2036", "yield": "7.54%", "price": 100.25, "maturity": "2036"},
+    {"name": "REC Ltd Tax Free Bond", "yield": "4.80%", "price": 1150, "maturity": "2027"}
+]
 
 @app.route('/')
-def index():
-    message = request.args.get('message')
-    status = request.args.get('status')
-    return render_template('index.html', is_testnet=IS_TESTNET, message=message, status=status)
-
-@app.route('/switch_env', methods=['POST'])
-def switch_env():
-    global IS_TESTNET
-    IS_TESTNET = not IS_TESTNET
-    return redirect(url_for('index'))
-
-@app.route('/order', methods=['POST'])
-def place_order():
-    client, error = get_client()
-    if error:
-        return redirect(url_for('index', message=f"Connection Error: {error}", status="error"))
-
-    order_type = request.form.get('type')
-    symbol = request.form.get('symbol').upper()
-    side = request.form.get('side')
-    quantity = float(request.form.get('quantity'))
-
-    try:
-        if order_type == 'market':
-            place_market_order(client, symbol, side, quantity)
-            msg = f"Market {side} order placed for {quantity} {symbol}"
-        elif order_type == 'limit':
-            price = float(request.form.get('price'))
-            place_limit_order(client, symbol, side, quantity, price)
-            msg = f"Limit {side} order placed for {quantity} {symbol} at {price}"
-        else:
-            return redirect(url_for('index', message="Invalid order type", status="error"))
-        
-        return redirect(url_for('index', message=msg, status="success"))
-    except Exception as e:
-        return redirect(url_for('index', message=f"Order Failed: {e}", status="error"))
-
-@app.route('/platform')
-def platform():
+def home():
     return send_from_directory('platform', 'index.html')
 
-# --- NEW: Real Market Data API (Powered by Yahoo Finance) ---
-# Requires: pip install yfinance
-try:
-    import yfinance as yf
-except ImportError:
-    print("Warning: yfinance not installed. Please run: pip install yfinance")
-    yf = None
+@app.route('/api/auth/login', methods=['POST'])
+def login():
+    data = request.json
+    # Simple simulation: Always succeed if email and password are provided
+    if data.get('email') and data.get('password'):
+        return jsonify({"status": "success", "user": {"name": "Madhav", "email": data['email']}})
+    return jsonify({"status": "error", "message": "Invalid credentials"}), 401
 
-@app.route('/api/market_status')
-def market_status():
-    # Simple check if market is open (Mock logic usually, but we can check mostly via time)
-    # For now returns true
-    return {"isOpen": True, "message": "Market is Open"}
+@app.route('/api/auth/signup', methods=['POST'])
+def signup():
+    data = request.json
+    return jsonify({"status": "success", "message": "User registered"})
 
-@app.route('/api/quote')
-def get_quote():
-    if not yf:
-        return {"error": "Server missing yfinance library"}, 500
+@app.route('/api/user/update', methods=['POST'])
+def update_user():
+    data = request.json
+    # In a real app, this would update DB. Here we just echo back success.
+    return jsonify({"status": "success", "message": "Profile updated successfully"})
+
+@app.route('/api/invest/ipos')
+def get_ipos(): return jsonify(MOCK_IPOS)
+
+@app.route('/api/invest/mutual_funds')
+def get_mfs(): return jsonify(MOCK_MFS)
+
+@app.route('/api/invest/bonds')
+def get_bonds(): return jsonify(MOCK_BONDS)
+
+@app.route('/api/baskets')
+def get_baskets(): return jsonify(MOCK_BASKETS)
+
+@app.route('/api/place_basket', methods=['POST'])
+def place_basket():
+    data = request.json
+    basket_id = data.get('basket_id')
+    basket = next((b for b in MOCK_BASKETS if b['id'] == basket_id), None)
     
-    symbol = request.args.get('symbol')
-    if not symbol:
-        return {"error": "Symbol required"}, 400
-    
-    try:
-        ticker = yf.Ticker(symbol)
-        data = ticker.fast_info
-        # fallback to regular info if fast_info missing
-        price = data.last_price if hasattr(data, 'last_price') else 0
-        prev_close = data.previous_close if hasattr(data, 'previous_close') else 0
-        change = ((price - prev_close) / prev_close) * 100 if prev_close else 0
+    if not basket:
+        return jsonify({"status": "error", "message": "Basket not found"}), 404
         
-        return {
-            "symbol": symbol,
-            "price": round(price, 2),
-            "change": round(change, 2),
-            "prev_close": round(prev_close, 2),
-            "day_high": round(data.day_high, 2) if hasattr(data, 'day_high') else 0,
-            "day_low": round(data.day_low, 2) if hasattr(data, 'day_low') else 0,
-            "volume": data.last_volume if hasattr(data, 'last_volume') else 0
-        }
-    except Exception as e:
-        print(f"Error fetching {symbol}: {e}")
-        return {"error": str(e)}, 500
+    if PAPER_STATE['funds'] < basket['min_amt']:
+        return jsonify({"status": "error", "message": "Insufficient funds to buy this basket"}), 400
+        
+    PAPER_STATE['funds'] -= basket['min_amt']
+    # Record transaction
+    PAPER_STATE['transactions'].append({
+        "id": f"txn_{len(PAPER_STATE['transactions'])+1}",
+        "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "type": "BASKET_BUY",
+        "amount": -basket['min_amt'],
+        "bal": PAPER_STATE['funds'],
+        "desc": f"Bought Basket: {basket['name']}"
+    })
+    
+    return jsonify({"status": "success", "message": f"Successfully invested in {basket['name']}!"})
+
+@app.route('/api/invest/mf/sip', methods=['POST'])
+def start_sip():
+    data = request.json
+    name = data.get('name')
+    PAPER_STATE['transactions'].append({
+        "id": f"txn_{len(PAPER_STATE['transactions'])+1}",
+        "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "type": "SIP_START",
+        "amount": 0,
+        "bal": PAPER_STATE['funds'],
+        "desc": f"SIP started for {name}"
+    })
+    return jsonify({"status": "success", "message": f"SIP for {name} started successfully"})
+
+@app.route('/api/invest/ipo/apply', methods=['POST'])
+def apply_ipo():
+    data = request.json
+    name = data.get('name')
+    PAPER_STATE['transactions'].append({
+        "id": f"txn_{len(PAPER_STATE['transactions'])+1}",
+        "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "type": "IPO_APP",
+        "amount": 0, 
+        "bal": PAPER_STATE['funds'],
+        "desc": f"Applied for IPO: {name}"
+    })
+    return jsonify({"status": "success", "message": f"Application for {name} submitted"})
+
+@app.route('/api/invest/bond/buy', methods=['POST'])
+def buy_bond():
+    data = request.json
+    name = data.get('name')
+    price = data.get('price', 0)
+    if PAPER_STATE['funds'] < price:
+        return jsonify({"status": "error", "message": "Insufficient funds"}), 400
+    PAPER_STATE['funds'] -= price
+    PAPER_STATE['transactions'].append({
+        "id": f"txn_{len(PAPER_STATE['transactions'])+1}",
+        "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "type": "BOND_BUY",
+        "amount": -price,
+        "bal": PAPER_STATE['funds'],
+        "desc": f"Purchased Bond: {name}"
+    })
+    return jsonify({"status": "success", "message": f"Invested in {name} successfully"})
+
+
+# SCREENER DATA
+SCREENER_DATA = [
+    {"symbol": "RELIANCE.NS", "sector": "Energy", "price": 2450, "change": 1.2, "rsi": 65, "pe": 24.5, "volume": "High"},
+    {"symbol": "TCS.NS", "sector": "IT", "price": 3240, "change": -0.5, "rsi": 42, "pe": 29.1, "volume": "Medium"},
+    {"symbol": "HDFCBANK.NS", "sector": "Banking", "price": 1650, "change": 0.8, "rsi": 58, "pe": 19.8, "volume": "High"},
+    {"symbol": "INFY.NS", "sector": "IT", "price": 1420, "change": -1.2, "rsi": 35, "pe": 22.4, "volume": "Medium"},
+    {"symbol": "ITC.NS", "sector": "FMCG", "price": 430, "change": 0.5, "rsi": 72, "pe": 26.0, "volume": "High"},
+    {"symbol": "TATAMOTORS.NS", "sector": "Auto", "price": 620, "change": 2.5, "rsi": 78, "pe": 45.0, "volume": "Very High"},
+    {"symbol": "ADANIENT.NS", "sector": "Energy", "price": 2500, "change": -3.5, "rsi": 28, "pe": 85.0, "volume": "High"},
+    {"symbol": "BAJFINANCE.NS", "sector": "Finance", "price": 7200, "change": 1.1, "rsi": 62, "pe": 35.0, "volume": "Medium"},
+]
+
+@app.route('/api/screener')
+def get_screener():
+    filter_type = request.args.get('filter', 'ALL')
+    data = SCREENER_DATA
+    
+    if filter_type == 'TOP_GAINERS':
+        data = [s for s in SCREENER_DATA if s['change'] > 0]
+    elif filter_type == 'TOP_LOSERS':
+        data = [s for s in SCREENER_DATA if s['change'] < 0]
+    elif filter_type == 'RSI_OVERBOUGHT':
+        data = [s for s in SCREENER_DATA if s['rsi'] > 70]
+    elif filter_type == 'RSI_OVERSOLD':
+        data = [s for s in SCREENER_DATA if s['rsi'] < 30]
+        
+    return jsonify(data)
+
+@app.route('/api/generate_key', methods=['POST'])
+def generate_key():
+    import uuid
+    return jsonify({"key": f"ik_{str(uuid.uuid4())[:16]}", "secret": f"is_{str(uuid.uuid4())[:16]}"})
 
 @app.route('/api/batch_quotes')
 def get_batch_quotes():
-    if not yf: return {"error": "Server missing yfinance"}, 500
     symbols = request.args.get('symbols', '').split(',')
+    response_map = {}
     
-    # yfinance batch download is faster
-    try:
-        data = yf.download(symbols, period="1d", group_by='ticker', progress=False)
-        results = []
+    for sym in symbols:
+        base = mock_defaults.get(sym, 500.0)
+        change_pct = random.uniform(-1.5, 1.5)
+        curr = base * (1 + change_pct/100)
+        response_map[sym] = {"price": round(curr, 2), "change": round(change_pct, 2)}
+
+    # Add indices
+    response_map['indices'] = {
+        "NIFTY": {"price": round(19500 + random.uniform(-10, 10), 2), "chg": round(0.5 + random.uniform(-0.1, 0.1), 2)},
+        "BANKNIFTY": {"price": round(44000 + random.uniform(-30, 30), 2), "chg": round(0.4 + random.uniform(-0.1, 0.1), 2)}
+    }
+
+    return jsonify(response_map)
+
+def get_mock_depth(price):
+    price = float(price)
+    bids = []
+    asks = []
+    for i in range(1, 6):
+        spread = price * 0.0005 * i
+        qty_base = int(10000 / price) if price > 0 else 100
+        bids.append({"price": round(price - spread, 2), "qty": random.randint(1, 10) * qty_base, "orders": random.randint(1, 20)})
+        asks.append({"price": round(price + spread, 2), "qty": random.randint(1, 10) * qty_base, "orders": random.randint(1, 20)})
+    return {"bids": bids, "asks": asks, "total_bid": sum(b['qty'] for b in bids), "total_ask": sum(a['qty'] for a in asks)}
+
+@app.route('/api/market_depth')
+def market_depth_api():
+    sym = request.args.get('symbol', 'RELIANCE.NS')
+    base = mock_defaults.get(sym, 2500) 
+    curr = base + random.uniform(-2, 2)
+    return jsonify(get_mock_depth(curr))
+
+@app.route('/api/funds/history')
+def get_funds_history():
+    return jsonify(PAPER_STATE['transactions'][::-1])
+
+@app.route('/api/portfolio')
+def get_portfolio():
+    total_val = PAPER_STATE['funds']
+    
+    # 1. Update Holdings
+    for h in PAPER_STATE['holdings']:
+        mock_price = h['avg']
+        if h['symbol'] in mock_defaults:
+             mock_price = mock_defaults[h['symbol']] + (random.uniform(-1, 1) * (mock_defaults[h['symbol']]/100))
+        h['ltp'] = round(mock_price, 2)
+        h['value'] = round(h['ltp'] * h['qty'], 2)
+        h['pnl'] = round(h['value'] - (h['avg'] * h['qty']), 2)
+        h['pnl_pct'] = round((h['pnl'] / (h['avg'] * h['qty'])) * 100, 2)
+        total_val += h['value']
+
+    # 2. Update Intraday Positions
+    pos_list = []
+    total_pnl = 0
+    for sym, pos in PAPER_STATE['positions'].items():
+        base = mock_defaults.get(sym, 1000)
+        curr = base + (random.uniform(-0.5, 0.5) * base / 100)
         
-        # Handle single vs multiple result structure difference
-        if len(symbols) == 1:
-            sym = symbols[0]
-            # yfinance structure varies by version, handling broadly:
-            try:
-                # Accessing scalar values from the dataframe
-                row = data.iloc[-1]
-                price = float(row['Close'])
-                if len(data) > 1:
-                     prev = float(data.iloc[-2]['Close'])
-                else:
-                     # fallback if only 1 data point (e.g. today started), try calling ticker info
-                     t = yf.Ticker(sym)
-                     fi = t.fast_info
-                     prev = fi.previous_close
-                     
-                change = ((price - prev)/prev)*100
-                results.append({
-                    "symbol": sym,
-                    "price": round(price, 2),
-                    "change": round(change, 2)
+        # MTM
+        mtm = (curr - pos['avg']) * pos['qty']
+        
+        if pos['qty'] != 0:
+            pos_entry = {
+                "symbol": sym, "qty": pos['qty'], "avg": pos['avg'], 
+                "ltp": round(curr, 2), "pnl": round(mtm, 2), "product": "MIS"
+            }
+            pos_list.append(pos_entry)
+            total_pnl += mtm
+
+    return jsonify({
+        "funds": round(PAPER_STATE['funds'], 2),
+        "holdings": PAPER_STATE['holdings'],
+        "positions": pos_list, 
+        "orders": PAPER_STATE['orders'][::-1],
+        "total_value": round(total_val, 2),
+        "total_pnl": round(total_pnl + sum(h['pnl'] for h in PAPER_STATE['holdings']), 2)
+    })
+
+@app.route('/api/add_funds', methods=['POST'])
+def add_funds():
+    amt = float(request.json.get('amount', 0))
+    PAPER_STATE['funds'] += amt
+    
+    # Ledger Entry
+    PAPER_STATE['transactions'].append({
+        "id": f"txn_{len(PAPER_STATE['transactions'])+1}",
+        "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "type": "DEPOSIT",
+        "amount": amt,
+        "bal": PAPER_STATE['funds'],
+        "desc": "Funds Added via UPI"
+    })
+    
+    return jsonify({"status": "success", "new_balance": PAPER_STATE['funds']})
+
+@app.route('/api/place_order', methods=['POST'])
+def place_order():
+    data = request.json
+    symbol = data.get('symbol')
+    side = data.get('side') 
+    qty = int(data.get('qty', 0))
+    product = data.get('product', 'MIS') 
+    price = float(data.get('price', 0)) 
+
+    # 1. VALIDATIONS
+    order_value = qty * price
+    
+    if side == 'BUY':
+        if PAPER_STATE['funds'] < order_value:
+             return jsonify({"status": "error", "message": f"Insufficient Margin. Req: {order_value}"})
+        PAPER_STATE['funds'] -= order_value 
+
+    elif side == 'SELL':
+        if product == 'CNC':
+            holding_item = next((h for h in PAPER_STATE['holdings'] if h['symbol'] == symbol), None)
+            if not holding_item or holding_item['qty'] < qty:
+                 return jsonify({"status": "error", "message": "Insufficient Holdings"})
+        
+        if side == 'SELL': 
+            PAPER_STATE['funds'] += order_value 
+
+    # 2. EXECUTION
+    PAPER_STATE['orders'].append({
+         "time": datetime.now().strftime("%H:%M:%S"),
+         "symbol": symbol, "type": side, "product": product,
+         "qty": qty, "price": price, "status": "COMPLETE"
+    })
+
+    # UPDATE PORTFOLIO
+    if product == 'CNC':
+        holding_item = next((h for h in PAPER_STATE['holdings'] if h['symbol'] == symbol), None)
+        if side == 'BUY':
+            if holding_item:
+                old_val = holding_item['qty'] * holding_item['avg']
+                new_val = qty * price
+                holding_item['qty'] += qty
+                holding_item['avg'] = round((old_val + new_val) / holding_item['qty'], 2)
+            else:
+                PAPER_STATE['holdings'].append({
+                    "symbol": symbol, "qty": qty, "avg": price,
+                    "ltp": price, "type": "CNC", "value": order_value, "pnl": 0, "pnl_pct": 0
                 })
-            except:
-                 # Fallback to single quote endpoint logic
-                 t = yf.Ticker(sym)
-                 fi = t.fast_info
-                 results.append({
-                     "symbol": sym,
-                     "price": round(fi.last_price, 2),
-                     "change": round(((fi.last_price - fi.previous_close)/fi.previous_close)*100, 2)
-                 })
-        else:
-             for sym in symbols:
-                 try:
-                     # For multiple symbols, data is MultiIndex
-                     price = float(data[sym]['Close'].iloc[-1])
-                     # Approx change calculation
-                     open_p = float(data[sym]['Open'].iloc[-1]) 
-                     change = ((price - open_p)/open_p)*100 # Using open as proxy for prev close for speed in batch
-                     results.append({
-                         "symbol": sym,
-                         "price": round(price, 2),
-                         "change": round(change, 2)
-                     })
-                 except:
-                     results.append({"symbol": sym, "price": 0, "change": 0})
-                     
-        return {"data": results}
-    except Exception as e:
-        return {"error": str(e)}, 500
+        else: 
+             if holding_item:
+                 holding_item['qty'] -= qty
+                 if holding_item['qty'] <= 0:
+                     PAPER_STATE['holdings'].remove(holding_item)
+
+    else: # MIS
+        if symbol not in PAPER_STATE['positions']:
+            PAPER_STATE['positions'][symbol] = {"qty": 0, "avg": 0}
+        p = PAPER_STATE['positions'][symbol]
+        
+        if side == 'BUY':
+             p['qty'] += qty
+             p['avg'] = price 
+        else: 
+             p['qty'] -= qty
+             p['avg'] = price 
+
+    return jsonify({"status": "success", "message": "Order Placed"})
+
+@app.route('/api/square_off', methods=['POST'])
+def square_off():
+    data = request.json
+    symbol = data.get('symbol')
+    if symbol in PAPER_STATE['positions']:
+        pos = PAPER_STATE['positions'][symbol]
+        qty = pos['qty']
+        if qty != 0:
+            side = 'SELL' if qty > 0 else 'BUY'
+            price = mock_defaults.get(symbol, 1000) 
+            PAPER_STATE['positions'][symbol] = {"qty": 0, "avg": 0}
+            
+            # Refund Margin (Simulated)
+            PAPER_STATE['funds'] += (abs(qty) * price)
+
+            PAPER_STATE['orders'].append({
+                "time": datetime.now().strftime("%H:%M:%S"),
+                "symbol": symbol, "type": side, "product": "MIS (Auto)",
+                "qty": abs(qty), "price": price, "status": "COMPLETE"
+            })
+            return jsonify({"status": "success"})
+    return jsonify({"status": "error", "message": "Position not found"})
 
 if __name__ == '__main__':
-    print("Starting Flask server...")
-    print("Open http://127.0.0.1:5000/platform in your browser.")
     app.run(debug=True, port=5000)
