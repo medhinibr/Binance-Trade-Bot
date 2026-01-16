@@ -2,6 +2,21 @@
 
 Nivarya Setu is trading simulation platform tailored for the Indian Stock Market. It provides a realistic environment for testing trading strategies on equities, derivatives, and mutual funds using real-time market data.
 
+![React](https://img.shields.io/badge/Frontend-React_18-blue?style=for-the-badge&logo=react)
+![Python](https://img.shields.io/badge/Backend-Python_Flask-green?style=for-the-badge&logo=python)
+
+## Overview
+
+Nivarya Setu is designed for high-performance trading simulation. By separating the logic into modular components, the platform ensures scalability and a premium user experience.
+
+## Language Breakdown
+*Note: GitHub classifies the React frontend under "JavaScript". All logic in `src/platform/app.jsx` is written using React functional components and hooks.*
+
+- **Python (Flask)**: Handles the API, user portfolio state, and market data simulation.
+- **JavaScript (React/JSX)**: Manages the entire UI, real-time updates, and interactive charting.
+- **CSS3**: Implementation of a custom, institutional-grade dark theme tailored for financial terminals.
+- **HTML5**: Semi-semantic structure for the core application shell.
+
 ## Key Features
 
 ### Core Trading
@@ -19,67 +34,42 @@ Nivarya Setu is trading simulation platform tailored for the Indian Stock Market
 - **F&O (Futures & Options)**: Trade derivatives with simulated margin requirements.
 - **IPO Dashboard**: Track listings and simulate IPO applications.
 
-## Tech Stack
+## Technical Architecture
 
-### Frontend
-- **React.js 18**: Component-based UI logic.
-- **Vanilla CSS**: Premium Institutional Dark Theme.
-- **TradingView API**: Professional financial visualization.
-- **Babel Standalone**: Browser-side JSX compilation for a zero-build workflow.
-
-### Backend
-- **Flask (Python)**: RESTful API and portfolio management logic.
-- **YFinance**: Real-time market data fetching.
-- **Firebase Auth**: Secure user authentication and Google login.
+The project follows a modern, decoupled architecture:
+1.  **Frontend**: Built with **React 18** using **JSX**. To maintain a zero-build environment for deployment ease, it uses **Babel Standalone** for browser-side compilation.
+2.  **Backend**: A **Flask** server that acts as a secure API gateway and manages mock order execution.
 
 ## Project Structure
 
 ```text
-Binance-Trade-Bot/
+Nivarya-Setu/
 ├── src/
-│   ├── app.py              # Flask Backend & API
-│   └── platform/           # Frontend Assets
-│       ├── index.html      # Main Entry Point
-│       ├── style.css       # Global Styles
-│       └── app.js          # React Components & Logic
-├── Readme.md               # Documentation
-└── requirements.txt        # Python Dependencies
+│   ├── app.py              # Flask API & Order Management
+│   └── platform/           # Modular Frontend
+│       ├── index.html      # Application Shell
+│       ├── style.css       # Institutional Dark Theme (CSS)
+│       └── app.jsx         # React Frontend Logic (JSX)
+├── Readme.md               # Professional Documentation
+└── requirements.txt        # Backend Dependencies
 ```
 
-## Installation
+## Getting Started
 
-### Prerequisites
-- Python 3.8 or higher
-- Pip (Python package manager)
-
-### Local Setup
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/medhinibr/Binance-Trade-Bot.git
-   cd Binance-Trade-Bot
-   ```
-
-2. **Install dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Configure Environment**:
-   Create a `.env` file in the `src/` directory and add your keys (optional for simulation):
-   ```env
-   FIREBASE_API_KEY=your_actual_key_here
-   ```
-
-4. **Run the application**:
-   ```bash
-   python src/app.py
-   ```
-
-5. **Access the Platform**:
-   Open your browser and navigate to `http://localhost:5000/`.
+1.  **Install Dependencies**:
+    ```bash
+    pip install -r requirements.txt
+    ```
+2.  **Run Server**:
+    ```bash
+    python src/app.py
+    ```
+3.  **Access Terminal**:
+    Visit `http://localhost:5000/` in your browser.
 
 ## Contributing
-Contributions are welcome! Please refer to [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+## Contributing
+Please refer to [CONTRIBUTING.md](CONTRIBUTING.md) for institutional guidelines.
 
 ## Contact
 For institutional inquiries or feedback, please reach out via GitHub issues.
