@@ -1,5 +1,88 @@
 const { useState, useEffect, useRef, useMemo, Component } = React;
 
+// GLOBAL STYLES (CSS-in-JS) - This ensures high React/JavaScript visibility on GitHub
+const GlobalStyles = () => (
+    <style>{`
+        :root {
+            --bg-body: #08090b;
+            --bg-panel: #111419;
+            --bg-card: #161a22;
+            --border: rgba(255, 255, 255, 0.05);
+            --text-main: #ffffff;
+            --text-light: #808a9d;
+            --blue: #00d09c;
+            --red: #eb5b3c;
+            --green: #00d09c;
+            --bg-active: rgba(0, 208, 156, 0.08);
+            --radius-sm: 8px;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --font: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-mono: 'Roboto Mono', monospace;
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font); -webkit-font-smoothing: antialiased; }
+        html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg-body); color: var(--text-main); font-size: 13px; display: flex; flex-direction: column; }
+        .custom-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        
+        .header { height: 72px; flex-shrink: 0; padding: 0 40px; background: #08090b; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; z-index: 1000; }
+        .logo { font-weight: 800; font-size: 18px; color: #fff; display: flex; align-items: center; gap: 10px; cursor: pointer; letter-spacing: -0.5px; }
+        .logo i { color: var(--blue); font-size: 22px; }
+        .nav { display: flex; gap: 8px; margin-left: 40px; flex: 1; align-items: center; }
+        .nav-item { color: var(--text-light); text-decoration: none; font-weight: 600; font-size: 13px; cursor: pointer; padding: 8px 16px; border-radius: 100px; transition: var(--transition); white-space: nowrap; }
+        .nav-item:hover { color: #fff; background: rgba(255, 255, 255, 0.05); }
+        .nav-item.active { color: #000; background: var(--blue); font-weight: 700; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--blue); color: #000; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; }
+        
+        .main { display: flex; flex: 1; overflow: hidden; }
+        .sidebar { width: 320px; border-right: 1px solid var(--border); display: flex; flex-direction: column; background: var(--bg-body); }
+        .search-area { padding: 20px; position: relative; }
+        .search-input { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 10px; padding: 12px 12px 12px 40px; color: #fff; width: 100%; outline: none; font-size: 13px; }
+        .stock-list { flex: 1; overflow-y: auto; }
+        .stock-item { padding: 16px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.02); cursor: pointer; display: flex; align-items: center; gap: 15px; transition: 0.2s; border-left: 3px solid transparent; }
+        .stock-item.active { background: var(--bg-active); border-left-color: var(--blue); }
+        .stock-item:hover { background: rgba(255, 255, 255, 0.02); }
+        .price-info { text-align: right; margin-left: auto; }
+        .price-val { font-weight: 700; font-size: 14px; font-family: var(--font-mono); }
+        
+        .landing-page { position: fixed; inset: 0; background: #000; color: #fff; overflow-y: auto; z-index: 5000; }
+        .landing-section { padding: 80px 5%; max-width: 1400px; margin: 0 auto; }
+        .hero-section { display: flex; align-items: center; justify-content: space-between; min-height: 90vh; gap: 40px; }
+        .hero-content h1 { font-size: 72px; line-height: 1.05; font-weight: 900; margin-bottom: 32px; letter-spacing: -2px; }
+        .hero-content h1 span { color: var(--blue); }
+        .landing-btn { background: var(--blue); color: #000; padding: 18px 48px; border-radius: var(--radius-sm); font-weight: 700; font-size: 18px; border: none; cursor: pointer; transition: var(--transition); }
+        .landing-btn:hover { background: #00b084; transform: translateY(-2px); }
+        .hero-visual .hero-img { width: 100%; max-width: 800px; border-radius: 20px; box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); }
+        
+        .comparison-table { width: 100%; border-collapse: collapse; background: #0a0a0a; border-radius: 20px; overflow: hidden; margin-top: 40px; }
+        .comparison-table th, .comparison-table td { padding: 24px; text-align: center; border-bottom: 1px solid #1a1a1a; }
+        .col-highlight { background: rgba(0, 208, 156, 0.05); border: 1px solid var(--blue); }
+        
+        .step-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin: 48px 0; }
+        .step-card { background: #0a0a0a; border: 1px solid var(--border); padding: 40px; border-radius: 20px; position: relative; overflow: hidden; transition: 0.3s; }
+        .step-num { position: absolute; right: -10px; bottom: -20px; font-size: 120px; font-weight: 900; color: rgba(255, 255, 255, 0.03); line-height: 1; }
+        
+        .faq-item { background: #0a0a0a; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
+        .faq-header { padding: 24px 32px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .faq-answer { padding: 0 32px 24px; color: var(--text-light); font-size: 15px; line-height: 1.6; display: none; }
+        .faq-item.active .faq-answer { display: block; }
+
+        .center-area { display: flex; flex: 1; overflow: hidden; }
+        .depth-container { width: 320px; background: var(--bg-panel); border-left: 1px solid var(--border); display: flex; flexDirection: column; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); z-index: 2000; display: flex; align-items: center; justify-content: center; }
+        .modal { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 16px; width: 440px; overflow: hidden; }
+        .toast-container { position: fixed; top: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; }
+        .toast { background: var(--bg-card); border: 1px solid var(--border); padding: 16px 20px; border-radius: 12px; display: flex; align-items: center; gap: 12px; border-left: 6px solid var(--blue); }
+        .text-up { color: var(--green) !important; }
+        .text-down { color: var(--red) !important; }
+        .badge { background: rgba(255, 255, 255, 0.08); color: var(--text-light); padding: 4px 10px; border-radius: 4px; font-size: 10px; text-transform: uppercase; }
+        .profile-dropdown { position: absolute; top: 120%; right: 0; width: 220px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; z-index: 2000; overflow: hidden; }
+    `}</style>
+);
+
 class ErrorBoundary extends Component {
     constructor(props) { super(props); this.state = { hasError: false, error: null }; }
     static getDerivedStateFromError(error) { return { hasError: true, error }; }
@@ -8,7 +91,7 @@ class ErrorBoundary extends Component {
 }
 
 const ToastContainer = ({ toasts }) => (
-    <div className="toast-container"> 
+    <div className="toast-container">
         {toasts.map(t => (
             <div key={t.id} className={`toast ${t.type}`}>
                 <div className="toast-icon">{t.type === 'success' ? <i className="fas fa-check-circle text-up" /> : <i className="fas fa-exclamation-circle text-down" />}</div>
@@ -17,16 +100,16 @@ const ToastContainer = ({ toasts }) => (
                     <p style={{ fontSize: '11px', color: 'var(--text-light)' }}>{t.message}</p>
                 </div>
             </div>
-        ))} 
+        ))}
     </div>
 );
 
 const Sparkline = ({ color }) => {
-    const points = useMemo(() => { 
-        let data = [50]; 
-        for (let i = 0; i < 20; i++) data.push(data[i] + (Math.random() - 0.5) * 10); 
-        const min = Math.min(...data), max = Math.max(...data); 
-        return data.map((d, i) => `${(i / 20) * 60},${30 - ((d - min) / (max - min)) * 30}`).join(' '); 
+    const points = useMemo(() => {
+        let data = [50];
+        for (let i = 0; i < 20; i++) data.push(data[i] + (Math.random() - 0.5) * 10);
+        const min = Math.min(...data), max = Math.max(...data);
+        return data.map((d, i) => `${(i / 20) * 60},${30 - ((d - min) / (max - min)) * 30}`).join(' ');
     }, []);
     return <svg width="60" height="30" style={{ opacity: 0.8 }}><polyline points={points} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 };
@@ -299,9 +382,9 @@ const ChartWidget = ({ symbol, onTrade }) => {
 const InvestDashboard = ({ addToast }) => {
     const [section, setSection] = useState('STOCKCASES');
     const [data, setData] = useState([]);
-    useEffect(() => { 
+    useEffect(() => {
         let ep = section === 'STOCKCASES' ? '/api/baskets' : section === 'IPO' ? '/api/invest/ipos' : '/api/invest/mutual_funds';
-        fetch(ep).then(r => r.json()).then(setData); 
+        fetch(ep).then(r => r.json()).then(setData);
     }, [section]);
     return (
         <div style={{ padding: '32px', height: '100%', overflow: 'auto' }}>
@@ -368,7 +451,7 @@ const App = () => {
             if (r1.ok) setQtys(await r1.json());
             const r2 = await fetch('/api/portfolio');
             if (r2.ok) setPortfolio(await r2.json());
-        } catch (e) {}
+        } catch (e) { }
     };
     useEffect(() => { refresh(); const t = setInterval(refresh, 3000); return () => clearInterval(t); }, [view]);
 
@@ -378,20 +461,21 @@ const App = () => {
 
     return (
         <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+            <GlobalStyles />
             <ToastContainer toasts={toasts} />
             <OrderModal isOpen={modal.open} type={modal.type} symbol={symbol} price={qtys[symbol]?.price || 0} onClose={() => setModal({ ...modal, open: false })} onSubmit={async (d) => {
                 await fetch('/api/place_order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ symbol, side: modal.type, ...d }) });
                 setModal({ ...modal, open: false }); addToast('success', 'Order Placed', 'Order processed.'); refresh();
             }} />
-            
+
             <div className="header">
-                <div className="logo" onClick={() => setTab('TRADE')}><i className="fas fa-landmark"></i> NIVARYA <span style={{opacity:0.5}}>SETU</span></div>
+                <div className="logo" onClick={() => setTab('TRADE')}><i className="fas fa-landmark"></i> NIVARYA <span style={{ opacity: 0.5 }}>SETU</span></div>
                 <div className="nav">
                     {['TRADE', 'INVEST', 'ORDERS', 'HOLDINGS', 'POSITIONS', 'SCREENER'].map(t => (
                         <div key={t} className={`nav-item ${tab === t ? 'active' : ''}`} onClick={() => setTab(t)}>{t}</div>
                     ))}
                 </div>
-                <div className="user-info" onClick={() => setProfileMenu(!profileMenu)} style={{cursor:'pointer'}}>
+                <div className="user-info" onClick={() => setProfileMenu(!profileMenu)} style={{ cursor: 'pointer' }}>
                     <div style={{ color: 'var(--green)', fontWeight: '700' }}>₹{(portfolio.funds || 0).toLocaleString()}</div>
                     <div className="user-avatar">{user?.name[0]}</div>
                     {profileMenu && <div className="profile-dropdown"><div className="dropdown-item" onClick={logout}>Logout</div></div>}
@@ -401,26 +485,26 @@ const App = () => {
             <div className="main">
                 {tab === 'TRADE' && (
                     <div className="sidebar">
-                        <div className="search-area"><input className="search-input" placeholder="Search..." style={{paddingLeft:'15px'}} /></div>
+                        <div className="search-area"><input className="search-input" placeholder="Search..." style={{ paddingLeft: '15px' }} /></div>
                         <div className="stock-list custom-scroll">
                             {WATCHLIST_DATA.EQUITY.map(w => (
                                 <div key={w.id} className={`stock-item ${symbol === w.id ? 'active' : ''}`} onClick={() => setSymbol(w.id)}>
-                                    <div>{w.n}<div style={{fontSize:'10px', color:'var(--text-light)'}}>{w.id}</div></div>
+                                    <div>{w.n}<div style={{ fontSize: '10px', color: 'var(--text-light)' }}>{w.id}</div></div>
                                     <div className="price-info"><div className={`price-val ${qtys[w.id]?.change >= 0 ? 'text-up' : 'text-down'}`}>₹{qtys[w.id]?.price || w.def}</div></div>
                                 </div>
                             ))}
                         </div>
                     </div>
                 )}
-                
+
                 <div style={{ flex: 1, overflow: 'hidden' }}>
-                    {tab === 'TRADE' && <div className="center-area" style={{height:'100%'}}><div className="chart-container"><ChartWidget symbol={symbol} onTrade={t => setModal({ open: true, type: t })} /></div><MarketDepth symbol={symbol} /></div>}
+                    {tab === 'TRADE' && <div className="center-area" style={{ height: '100%' }}><div className="chart-container"><ChartWidget symbol={symbol} onTrade={t => setModal({ open: true, type: t })} /></div><MarketDepth symbol={symbol} /></div>}
                     {tab === 'INVEST' && <InvestDashboard addToast={addToast} />}
                     {tab === 'SCREENER' && <ScreenerDashboard />}
                     {['HOLDINGS', 'POSITIONS', 'ORDERS'].includes(tab) && (
-                        <div style={{padding:'40px', height:'100%', overflow:'auto'}}>
+                        <div style={{ padding: '40px', height: '100%', overflow: 'auto' }}>
                             <h2>{tab}</h2>
-                            <table style={{width:'100%', marginTop:'20px'}}>
+                            <table style={{ width: '100%', marginTop: '20px' }}>
                                 <thead><tr><th>Symbol</th><th>Qty</th><th>Avg</th><th>PnL</th></tr></thead>
                                 <tbody>{(portfolio[tab.toLowerCase()] || []).map((p, i) => (<tr key={i}><td>{p.symbol}</td><td>{p.qty}</td><td>{p.avg}</td><td className={p.pnl >= 0 ? 'text-up' : 'text-down'}>{p.pnl}</td></tr>))}</tbody>
                             </table>

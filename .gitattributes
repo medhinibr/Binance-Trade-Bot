@@ -1,0 +1,9 @@
+# Force linguist to detect .jsx as JavaScript (React)
+*.jsx linguist-language=JavaScript
+*.py  linguist-language=Python
+
+# Hide common non-important files from language stats
+Readme.md linguist-documentation
+CONTRIBUTING.md linguist-documentation
+requirements.txt linguist-documentation
+.gitignore linguist-documentation
