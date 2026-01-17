@@ -261,17 +261,35 @@ const ScreenerDashboard = () => {
     const [filter, setFilter] = useState('ALL'); const [data, setData] = useState([]);
     useEffect(() => { fetch(`/api/screener?filter=${filter}`).then(r => r.json()).then(setData); }, [filter]);
     return (
-        <div style={{ padding: '32px', height: '100%', overflow: 'auto' }}>
-            <h2 style={{ marginBottom: '24px' }}>Market Screener</h2>
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '32px' }}>
+        <div className="dashboard-container">
+            <h1 style={{ fontSize: '32px', marginBottom: '32px', fontWeight: '800' }}>Market Screener</h1>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '40px' }}>
                 {['ALL', 'TOP_GAINERS', 'TOP_LOSERS'].map(f => (
                     <button key={f} className={`nav-item ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>{f.replace('_', ' ')}</button>
                 ))}
             </div>
-            <table style={{ width: '100%' }}>
-                <thead><tr><th>Symbol</th><th>Sector</th><th>Price</th><th>Change</th><th>RSI</th></tr></thead>
-                <tbody>{data.map(s => (<tr key={s.symbol}><td>{s.symbol}</td><td>{s.sector}</td><td>₹{s.price}</td><td className={s.change > 0 ? 'text-up' : 'text-down'}>{s.change}%</td><td>{s.rsi}</td></tr>))}</tbody>
-            </table>
+            <div style={{ background: 'var(--bg-panel)', borderRadius: '24px', border: '1px solid var(--border)', overflow: 'hidden' }}>
+                <table className="custom-table">
+                    <thead>
+                        <tr><th>SYMBOL</th><th>SECTOR</th><th>PRICE</th><th>CHANGE</th><th>RSI</th></tr>
+                    </thead>
+                    <tbody>
+                        {data.length === 0 ? (
+                            <tr><td colSpan="5"><EmptyState icon="fa-search" text="Analyzing market data..." /></td></tr>
+                        ) : (
+                            data.map(s => (
+                                <tr key={s.symbol}>
+                                    <td style={{ fontWeight: '700' }}>{s.symbol}</td>
+                                    <td style={{ color: 'var(--text-light)' }}>{s.sector}</td>
+                                    <td style={{ fontFamily: 'var(--font-mono)' }}>₹{s.price}</td>
+                                    <td className={s.change > 0 ? 'text-up' : 'text-down'} style={{ fontWeight: '700' }}>{s.change > 0 ? '+' : ''}{s.change}%</td>
+                                    <td style={{ fontFamily: 'var(--font-mono)' }}>{s.rsi}</td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 };
@@ -304,16 +322,21 @@ const InvestDashboard = ({ addToast }) => {
         fetch(ep).then(r => r.json()).then(setData);
     }, [section]);
     return (
-        <div style={{ padding: '32px', height: '100%', overflow: 'auto' }}>
-            <div style={{ display: 'flex', gap: '20px', marginBottom: '32px' }}>
-                {['STOCKCASES', 'IPO', 'MF'].map(s => (<button key={s} className={`nav-item ${section === s ? 'active' : ''}`} onClick={() => setSection(s)}>{s}</button>))}
+        <div className="dashboard-container">
+            <h1 style={{ fontSize: '32px', marginBottom: '32px', fontWeight: '800' }}>Investment Solutions</h1>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '40px' }}>
+                {['STOCKCASES', 'IPO', 'MF'].map(s => (<button key={s} className={`nav-item ${section === s ? 'active' : ''}`} onClick={() => setSection(s)}>{s === 'MF' ? 'Mutual Funds' : s}</button>))}
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
+            <div className="basket-grid">
                 {data.map((item, i) => (
-                    <div key={i} style={{ background: 'var(--bg-card)', padding: '24px', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                        <div style={{ fontWeight: '700', fontSize: '18px', marginBottom: '12px' }}>{item.name}</div>
-                        <p style={{ color: 'var(--text-light)', fontSize: '14px' }}>{item.desc || item.status}</p>
-                        <button className="landing-btn" style={{ marginTop: '20px', width: '100%', padding: '10px' }} onClick={() => addToast('success', 'Order Placed', `Request for ${item.name} sent.`)}>Invest</button>
+                    <div key={i} className="basket-card">
+                        <div style={{ color: 'var(--blue)', fontSize: '10px', fontWeight: '800', marginBottom: '8px', letterSpacing: '1px' }}>{section}</div>
+                        <h3>{item.name}</h3>
+                        <p>{item.desc || item.status}</p>
+                        <div className="flex-between" style={{ marginTop: 'auto' }}>
+                            <div style={{ fontSize: '11px', color: 'var(--text-light)' }}>Min. Invest: ₹{section === 'MF' ? '500' : '5,000'}</div>
+                            <button className="landing-btn" style={{ padding: '12px 24px', fontSize: '14px', borderRadius: '8px' }} onClick={() => addToast('success', 'Order Placed', `Request for ${item.name} sent.`)}>Invest</button>
+                        </div>
                     </div>
                 ))}
             </div>
@@ -327,12 +350,39 @@ const OrderModal = ({ isOpen, type, symbol, price, onClose, onSubmit }) => {
     const isBuy = type === 'BUY';
     return (
         <div className="modal-overlay">
-            <div className="modal" style={{ padding: '24px' }}>
-                <h3 style={{ marginBottom: '20px' }}>{type} {symbol}</h3>
-                <div style={{ marginBottom: '20px' }}><label className="badge">Qty</label><input className="search-input" style={{ width: '100%', paddingLeft: '15px' }} type="number" value={qty} onChange={e => setQty(e.target.value)} /></div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    <button className="landing-btn" style={{ flex: 1, background: isBuy ? 'var(--blue)' : 'var(--red)', color: isBuy ? '#000' : '#fff' }} onClick={() => onSubmit({ qty, type: 'MARKET', price })}>{type}</button>
-                    <button className="nav-item" onClick={onClose}>Cancel</button>
+            <div className="modal">
+                <div style={{ padding: '32px' }}>
+                    <div className="flex-between" style={{ marginBottom: '32px' }}>
+                        <div>
+                            <div style={{ fontSize: '12px', color: 'var(--text-light)', fontWeight: '700', marginBottom: '4px' }}>EXECUTE ORDER</div>
+                            <h2 style={{ fontSize: '28px', fontWeight: '900' }}>{symbol}</h2>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                            <div className="badge" style={{ background: isBuy ? 'rgba(0, 208, 156, 0.1)' : 'rgba(235, 91, 60, 0.1)', color: isBuy ? 'var(--green)' : 'var(--red)', marginBottom: '8px' }}>{type}</div>
+                            <div style={{ fontSize: '18px', fontWeight: '800', fontFamily: 'var(--font-mono)' }}>₹{price}</div>
+                        </div>
+                    </div>
+
+                    <div style={{ marginBottom: '32px' }}>
+                        <label className="badge" style={{ marginBottom: '12px', display: 'block', width: 'fit-content' }}>QUANTITY (SHARES)</label>
+                        <input className="search-input" type="number" value={qty} onChange={e => setQty(e.target.value)} style={{ paddingLeft: '20px', fontSize: '20px', fontWeight: '800' }} />
+                    </div>
+
+                    <div style={{ background: 'rgba(255,255,255,0.02)', padding: '24px', borderRadius: '16px', marginBottom: '32px', border: '1px solid var(--border)' }}>
+                        <div className="flex-between" style={{ marginBottom: '12px' }}>
+                            <span style={{ color: 'var(--text-light)' }}>Margin Required</span>
+                            <span style={{ fontWeight: '700' }}>₹{(qty * price * 0.2).toLocaleString()}</span>
+                        </div>
+                        <div className="flex-between">
+                            <span style={{ color: 'var(--text-light)' }}>Total Value</span>
+                            <span style={{ fontWeight: '700' }}>₹{(qty * price).toLocaleString()}</span>
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '16px' }}>
+                        <button className="landing-btn" style={{ flex: 1, background: isBuy ? 'var(--green)' : 'var(--red)', color: isBuy ? '#000' : '#fff' }} onClick={() => onSubmit({ qty, type: 'MARKET', price })}>Place {type} Order</button>
+                        <button className="nav-item" onClick={onClose} style={{ padding: '20px' }}>Dismiss</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -385,45 +435,100 @@ const App = () => {
             }} />
 
             <div className="header">
-                <div className="logo" onClick={() => setTab('TRADE')}><i className="fas fa-landmark"></i> NIVARYA <span style={{ opacity: 0.5 }}>SETU</span></div>
+                <div className="logo" onClick={() => setTab('TRADE')}>
+                    <i className="fas fa-landmark"></i>
+                    <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.2' }}>
+                        <div style={{ display: 'flex', gap: '5px', fontSize: '18px' }}>NIVARYA <span style={{ fontWeight: '300', opacity: 0.5 }}>SETU</span></div>
+                        <div style={{ fontSize: '9px', fontWeight: '500', opacity: 0.3, letterSpacing: '0.5px' }}>INSTITUTIONAL TERMINAL</div>
+                    </div>
+                </div>
                 <div className="nav">
                     {['TRADE', 'INVEST', 'ORDERS', 'HOLDINGS', 'POSITIONS', 'SCREENER'].map(t => (
                         <div key={t} className={`nav-item ${tab === t ? 'active' : ''}`} onClick={() => setTab(t)}>{t}</div>
                     ))}
                 </div>
-                <div className="user-info" onClick={() => setProfileMenu(!profileMenu)} style={{ cursor: 'pointer' }}>
-                    <div style={{ color: 'var(--green)', fontWeight: '700' }}>₹{(portfolio.funds || 0).toLocaleString()}</div>
+                <div className="user-info" onClick={() => setProfileMenu(!profileMenu)} style={{ cursor: 'pointer', position: 'relative' }}>
+                    <div style={{ color: 'var(--green)', fontWeight: '800', fontSize: '15px' }}>₹{(portfolio.funds || 0).toLocaleString()}</div>
                     <div className="user-avatar">{user?.name[0]}</div>
-                    {profileMenu && <div className="profile-dropdown"><div className="dropdown-item" onClick={logout}>Logout</div></div>}
+                    {profileMenu && (
+                        <div className="profile-dropdown" style={{ top: '130%', right: '0' }}>
+                            <div className="dropdown-item" style={{ padding: '15px 20px', borderBottom: '1px solid var(--border)' }}>
+                                <div style={{ fontSize: '14px', fontWeight: '700' }}>{user?.name}</div>
+                                <div style={{ fontSize: '11px', color: 'var(--text-light)' }}>{user?.email}</div>
+                            </div>
+                            <div className="dropdown-item" onClick={logout} style={{ padding: '15px 20px', color: 'var(--red)', cursor: 'pointer', fontWeight: '600' }}>Logout</div>
+                        </div>
+                    )}
                 </div>
             </div>
 
             <div className="main">
                 {tab === 'TRADE' && (
                     <div className="sidebar">
-                        <div className="search-area"><input className="search-input" placeholder="Search..." style={{ paddingLeft: '15px' }} /></div>
+                        <div className="search-area">
+                            <i className="fas fa-search" style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: '40px', color: 'var(--text-light)', opacity: 0.5 }}></i>
+                            <input className="search-input" placeholder="Search instrument..." />
+                        </div>
                         <div className="stock-list custom-scroll">
                             {WATCHLIST_DATA.EQUITY.map(w => (
                                 <div key={w.id} className={`stock-item ${symbol === w.id ? 'active' : ''}`} onClick={() => setSymbol(w.id)}>
-                                    <div>{w.n}<div style={{ fontSize: '10px', color: 'var(--text-light)' }}>{w.id}</div></div>
-                                    <div className="price-info"><div className={`price-val ${qtys[w.id]?.change >= 0 ? 'text-up' : 'text-down'}`}>₹{qtys[w.id]?.price || w.def}</div></div>
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ fontWeight: '700', fontSize: '14px' }}>{w.n}</div>
+                                        <div style={{ fontSize: '10px', color: 'var(--text-light)', marginTop: '2px' }}>{w.id}</div>
+                                    </div>
+                                    <Sparkline color={qtys[w.id]?.change >= 0 ? 'var(--green)' : 'var(--red)'} />
+                                    <div className="price-info">
+                                        <div className={`price-val ${qtys[w.id]?.change >= 0 ? 'text-up' : 'text-down'}`}>₹{qtys[w.id]?.price || w.def}</div>
+                                        <div style={{ fontSize: '10px', opacity: 0.6, marginTop: '2px' }}>{qtys[w.id]?.change >= 0 ? '+' : ''}{qtys[w.id]?.change || '0.00'}%</div>
+                                    </div>
                                 </div>
                             ))}
                         </div>
                     </div>
                 )}
 
-                <div style={{ flex: 1, overflow: 'hidden' }}>
-                    {tab === 'TRADE' && <div className="center-area" style={{ height: '100%' }}><div className="chart-container"><ChartWidget symbol={symbol} onTrade={t => setModal({ open: true, type: t })} /></div><MarketDepth symbol={symbol} /></div>}
+                <div style={{ flex: 1, overflow: 'hidden', height: '100%' }}>
+                    {tab === 'TRADE' && (
+                        <div className="center-area" style={{ height: '100%' }}>
+                            <div className="chart-container">
+                                <ChartWidget symbol={symbol} onTrade={t => setModal({ open: true, type: t })} />
+                            </div>
+                            <MarketDepth symbol={symbol} />
+                        </div>
+                    )}
                     {tab === 'INVEST' && <InvestDashboard addToast={addToast} />}
                     {tab === 'SCREENER' && <ScreenerDashboard />}
                     {['HOLDINGS', 'POSITIONS', 'ORDERS'].includes(tab) && (
-                        <div style={{ padding: '40px', height: '100%', overflow: 'auto' }}>
-                            <h2>{tab}</h2>
-                            <table style={{ width: '100%', marginTop: '20px' }}>
-                                <thead><tr><th>Symbol</th><th>Qty</th><th>Avg</th><th>PnL</th></tr></thead>
-                                <tbody>{(portfolio[tab.toLowerCase()] || []).map((p, i) => (<tr key={i}><td>{p.symbol}</td><td>{p.qty}</td><td>{p.avg}</td><td className={p.pnl >= 0 ? 'text-up' : 'text-down'}>{p.pnl}</td></tr>))}</tbody>
-                            </table>
+                        <div style={{ padding: '60px', height: '100%', overflow: 'auto' }}>
+                            <h1 style={{ fontSize: '32px', marginBottom: '40px', fontWeight: '800' }}>{tab}</h1>
+                            <div style={{ background: 'var(--bg-panel)', borderRadius: '24px', border: '1px solid var(--border)', overflow: 'hidden' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                    <thead>
+                                        <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border)' }}>
+                                            <th style={{ padding: '20px 30px', textAlign: 'left', fontSize: '11px', color: 'var(--text-light)' }}>INSTRUMENT</th>
+                                            <th style={{ padding: '20px 30px', textAlign: 'left', fontSize: '11px', color: 'var(--text-light)' }}>QTY</th>
+                                            <th style={{ padding: '20px 30px', textAlign: 'left', fontSize: '11px', color: 'var(--text-light)' }}>AVG PRICE</th>
+                                            <th style={{ padding: '20px 30px', textAlign: 'right', fontSize: '11px', color: 'var(--text-light)' }}>P&L (UNREALIZED)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {(portfolio[tab.toLowerCase()] || []).length === 0 ? (
+                                            <tr><td colSpan="4"><EmptyState icon="fa-box-open" text={`No ${tab.toLowerCase()} found.`} /></td></tr>
+                                        ) : (
+                                            (portfolio[tab.toLowerCase()] || []).map((p, i) => (
+                                                <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
+                                                    <td style={{ padding: '20px 30px', fontWeight: '700' }}>{p.symbol}</td>
+                                                    <td style={{ padding: '20px 30px' }}>{p.qty}</td>
+                                                    <td style={{ padding: '20px 30px', fontFamily: 'var(--font-mono)' }}>₹{p.avg}</td>
+                                                    <td style={{ padding: '20px 30px', textAlign: 'right', fontWeight: '800', fontFamily: 'var(--font-mono)' }} className={p.pnl >= 0 ? 'text-up' : 'text-down'}>
+                                                        {p.pnl >= 0 ? '+' : ''}{p.pnl.toLocaleString()}
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     )}
                 </div>
