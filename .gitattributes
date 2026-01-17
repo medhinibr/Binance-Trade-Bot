@@ -1,9 +1,12 @@
-# Force linguist to detect .jsx as JavaScript (React)
-*.jsx linguist-language=JavaScript
-*.py  linguist-language=Python
+# Tell GitHub to show the specific React syntax (JSX) instead of plain JavaScript
+*.jsx linguist-language=JSX
 
-# Hide common non-important files from language stats
+# Keep Python detection
+*.py linguist-language=Python
+
+# Hide documentation from the bar to make the code percentages higher
 Readme.md linguist-documentation
 CONTRIBUTING.md linguist-documentation
 requirements.txt linguist-documentation
-.gitignore linguist-documentation
+.gitattributes linguist-documentation
+index.html linguist-documentation
