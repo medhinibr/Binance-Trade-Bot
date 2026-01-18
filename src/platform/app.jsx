@@ -77,7 +77,7 @@ const LandingPage = ({ onStart }) => {
     }, [mode]);
 
     return (
-        <div className="landing-page">
+        <div className="landing-page" style={{ height: '100vh', overflowY: 'auto', overflowX: 'hidden' }}>
             <div className="header">
                 <div className="logo" onClick={() => onStart('LANDING')}>
                     <i className="fas fa-landmark"></i>
@@ -264,7 +264,7 @@ const AuthPage = ({ type, onAuth, onBack }) => {
     };
 
     return (
-        <div className="auth-split-container">
+        <div className="auth-split-container" style={{ height: '100vh', overflowY: 'auto' }}>
             <div className="auth-info-side">
                 <div className="auth-info-content">
                     <div style={{ color: 'var(--blue)', fontWeight: '800', letterSpacing: '2px', marginBottom: '20px' }}>NIVARYA SETU</div>
@@ -397,7 +397,7 @@ const LegalPage = ({ type, onBack }) => {
     const doc = policies[type] || { title: "Legal", content: "Information not found." };
 
     return (
-        <div style={{ minHeight: '100vh', background: '#000', padding: '60px 20px' }}>
+        <div style={{ height: '100vh', overflowY: 'auto', background: '#000', padding: '60px 20px' }}>
             <div style={{ maxWidth: '800px', margin: '0 auto' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '40px' }}>
                     <button className="nav-item" onClick={onBack} style={{ paddingLeft: 0, color: 'var(--text-light)' }}>
