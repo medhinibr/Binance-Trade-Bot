@@ -301,18 +301,132 @@ const AuthPage = ({ type, onAuth, onBack }) => {
 };
 
 const LegalPage = ({ type, onBack }) => {
-    const content = {
-        PRIVACY: { title: "Privacy Policy", body: "We protect your financial data with industry-standard encryption." },
-        TERMS: { title: "Terms & Conditions", body: "By using Nivarya Setu, you agree to our service terms." },
-        RISK: { title: "Risk Disclosure", body: "Trading involves risk of capital loss." },
-        REFUND: { title: "Refund Policy", body: "Subscription fees are generally non-refundable." }
-    }[type] || { title: "Legal", body: "Legal information." };
+    const policies = {
+        PRIVACY: {
+            title: "Privacy Policy",
+            updated: "Jan 1, 2026",
+            content: (
+                <>
+                    <p>At Nivarya Setu, we prioritize the trust you place in us when sharing your personal and financial data. This policy outlines our improved standards for data protection.</p>
+
+                    <h3>1. Information Collection</h3>
+                    <p>We collect information necessary to provide our trading services, including basic KYC details (Name, PAN, Aadhaar), financial history, and device telemetry for security purposes.</p>
+
+                    <h3>2. Data Usage</h3>
+                    <p>Your data is used solely for:</p>
+                    <ul>
+                        <li>Executing trades on exchanges (NSE/BSE).</li>
+                        <li>Compliance with SEBI and PMLA regulations.</li>
+                        <li>Improving platform performance and stability.</li>
+                    </ul>
+
+                    <h3>3. Data Security</h3>
+                    <p>We employ military-grade AES-256 encryption for data at rest and TLS 1.3 for data in transit. We do not sell your personal data to third parties.</p>
+                </>
+            )
+        },
+        TERMS: {
+            title: "Terms & Conditions",
+            updated: "Jan 1, 2026",
+            content: (
+                <>
+                    <p>Welcome to Nivarya Setu. By accessing our platform, you agree to be bound by these terms. If you do not agree, strictly do not use our services.</p>
+
+                    <h3>1. Eligibility</h3>
+                    <p>You must be an Indian resident, 18 years or older, with a valid PAN and bank account to open a Demat account.</p>
+
+                    <h3>2. Acceptable Use</h3>
+                    <p>You agree not to use the platform for any unlawful activities, including money laundering or market manipulation. Algo-trading APIs must be used in compliance with exchange guidelines.</p>
+
+                    <h3>3. Limitation of Liability</h3>
+                    <p>Nivarya Setu is a technology provider. We are not liable for losses due to market volatility, technical failures (isp/exchange side), or user error.</p>
+                </>
+            )
+        },
+        RISK: {
+            title: "Risk Disclosure",
+            updated: "Jan 1, 2026",
+            content: (
+                <>
+                    <div style={{ background: 'rgba(235, 91, 60, 0.1)', borderLeft: '4px solid var(--red)', padding: '16px', marginBottom: '24px' }}>
+                        <strong>WARNING:</strong> Investments in the securities market are subject to market risks. Read all the related documents carefully before investing.
+                    </div>
+
+                    <h3>1. Market Risk</h3>
+                    <p>The value of securities can fluctuate significantly. Past performance is not indicative of future results.</p>
+
+                    <h3>2. Derivatives Risk (F&O)</h3>
+                    <p>Derivatives are leveraged products. A small price movement can lead to the complete loss of your capital. 9 out of 10 individual traders in equity Future and Options Segment incurred net losses.</p>
+
+                    <h3>3. Technology Risk</h3>
+                    <p>While we strive for 99.9% uptime, internet-based trading is subject to connection failures. We recommend maintaining backup modes of trading (Call & Trade).</p>
+                </>
+            )
+        },
+        REFUND: {
+            title: "Refund Policy",
+            updated: "Jan 1, 2026",
+            content: (
+                <>
+                    <p>Nivarya Setu aims for transparency in billing. This policy clarifies our refund structure.</p>
+
+                    <h3>1. Account Opening Fees</h3>
+                    <p>If applicable, account opening fees are non-refundable once the KYC process has been initiated with the KRAs/Exchanges.</p>
+
+                    <h3>2. Brokerage & Taxes</h3>
+                    <p>Brokerage charged on executed trades is non-refundable. STT, GST, and Stamp Duty are collected on behalf of the government and cannot be refunded.</p>
+
+                    <h3>3. Software Subscriptions</h3>
+                    <p>Pro-rata refunds are available for annual software subscriptions if cancelled within 7 days of purchase. No refunds for monthly plans.</p>
+                </>
+            )
+        }
+    };
+
+    const doc = policies[type] || { title: "Legal", content: "Information not found." };
 
     return (
-        <div style={{ padding: '80px 20px', maxWidth: '800px', margin: '0 auto' }}>
-            <button className="nav-item" onClick={onBack} style={{ marginBottom: '40px' }}><i className="fas fa-arrow-left"></i> Home</button>
-            <h1 style={{ fontSize: '36px', marginBottom: '32px' }}>{content.title}</h1>
-            <div style={{ background: 'var(--bg-card)', padding: '40px', borderRadius: '20px', border: '1px solid var(--border)', lineHeight: '1.8' }}>{content.body}</div>
+        <div style={{ minHeight: '100vh', background: '#000', padding: '60px 20px' }}>
+            <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '40px' }}>
+                    <button className="nav-item" onClick={onBack} style={{ paddingLeft: 0, color: 'var(--text-light)' }}>
+                        <i className="fas fa-arrow-left" style={{ marginRight: '8px' }}></i> Back to Home
+                    </button>
+                    <div style={{ fontSize: '12px', color: 'var(--text-light)', border: '1px solid var(--border)', padding: '6px 12px', borderRadius: '100px' }}>
+                        Legal Compliance
+                    </div>
+                </div>
+
+                <div className="fade-in" style={{ background: 'var(--bg-panel)', border: '1px solid var(--border)', borderRadius: '24px', padding: '60px', position: 'relative', overflow: 'hidden' }}>
+                    {/* Decorative Background */}
+                    <div style={{ position: 'absolute', top: 0, right: 0, width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(0, 208, 156, 0.05) 0%, transparent 70%)', pointerEvents: 'none' }}></div>
+
+                    <div style={{ marginBottom: '40px', borderBottom: '1px solid var(--border)', paddingBottom: '30px' }}>
+                        <h1 style={{ fontSize: '42px', fontWeight: '800', marginBottom: '16px' }}>{doc.title}</h1>
+                        <div style={{ color: 'var(--text-light)', fontSize: '14px' }}>Last Updated: {doc.updated || 'Jan 1, 2026'}</div>
+                    </div>
+
+                    <div className="legal-content" style={{ fontSize: '16px', lineHeight: '1.8', color: '#ccc' }}>
+                        {doc.content}
+                    </div>
+
+                    <div style={{ marginTop: '60px', paddingTop: '30px', borderTop: '1px solid var(--border)', display: 'flex', gap: '20px', alignItems: 'center' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border)' }}>
+                            <i className="fas fa-shield-alt" style={{ color: 'var(--green)' }}></i>
+                        </div>
+                        <div style={{ fontSize: '13px', color: 'var(--text-light)' }}>
+                            Nivarya Setu Financial Services · SEBI Reg. No. INZ0001234567
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <style>{`
+                .legal-content h3 { font-size: 20px; font-weight: 700; margin: 40px 0 16px 0; color: #fff; }
+                .legal-content p { margin-bottom: 16px; }
+                .legal-content ul { padding-left: 20px; margin-bottom: 16px; }
+                .legal-content li { marginBottom: 8px; }
+            `}</style>
         </div>
     );
 };
