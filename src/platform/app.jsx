@@ -110,10 +110,11 @@ const LandingPage = ({ onStart }) => {
                     <div style={{ position: 'relative' }}>
                         <img key={mode} src={content.img} className="hero-img fade-in" alt="Platform Mockup" style={{ maxHeight: '600px', objectFit: 'contain' }} />
                         <div style={{ position: 'absolute', bottom: -40, right: -40, background: 'rgba(20,20,20,0.9)', padding: '24px', borderRadius: '16px', border: '1px solid var(--border)', backdropFilter: 'blur(10px)', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}>
-                            <div style={{ fontSize: '12px', color: 'var(--text-light)', marginBottom: '8px' }}>Active Users</div>
-                            <div style={{ fontSize: '32px', fontWeight: '800', color: '#fff' }}>1.2M+</div>
-                            <div style={{ display: 'flex', gap: '4px', marginTop: '8px' }}>
-                                {[1, 2, 3, 4, 5].map(i => <i key={i} className="fas fa-star" style={{ color: '#ffb300', fontSize: '12px' }}></i>)}
+                            <div style={{ fontSize: '12px', color: 'var(--text-light)', marginBottom: '8px' }}>Market Status</div>
+                            <div style={{ fontSize: '24px', fontWeight: '800', color: 'var(--green)' }}>Live & Active</div>
+                            <div style={{ display: 'flex', gap: '8px', marginTop: '8px', alignItems: 'center' }}>
+                                <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--green)' }}></div>
+                                <span style={{ fontSize: '12px', color: '#fff' }}>NSE & BSE Connected</span>
                             </div>
                         </div>
                     </div>
@@ -126,7 +127,7 @@ const LandingPage = ({ onStart }) => {
                         <h2 style={{ fontSize: '42px', fontWeight: '800', marginBottom: '16px' }}>Technology <span style={{ color: 'var(--blue)' }}>First</span></h2>
                         <p style={{ color: 'var(--text-light)', maxWidth: '500px' }}>We don't just provide a platform; we provide an edge. Engineered for those who refuse to settle for lag.</p>
                     </div>
-                    <button className="nav-item">View All Features <i className="fas fa-arrow-right" style={{ marginLeft: '8px' }}></i></button>
+                    <button className="nav-item" onClick={() => onStart('SIGNUP')}>Create Account <i className="fas fa-arrow-right" style={{ marginLeft: '8px' }}></i></button>
                 </div>
 
                 <div className="stock-list" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', overflow: 'visible' }}>
@@ -158,11 +159,14 @@ const LandingPage = ({ onStart }) => {
                         <div style={{ textTransform: 'uppercase', color: 'var(--green)', fontWeight: '800', fontSize: '12px', letterSpacing: '2px', marginBottom: '24px' }}>On The Go</div>
                         <h2 style={{ fontSize: '48px', fontWeight: '900', marginBottom: '24px', lineHeight: '1.1' }}>Trade Everywhere.<br />Miss Nothing.</h2>
                         <p style={{ color: 'var(--text-light)', fontSize: '18px', lineHeight: '1.6', marginBottom: '40px' }}>
-                            The Nivarya Setu mobile app brings the full power of the desktop terminal to your pocket. Option chain, GTT orders, and instant pledging—all just a tap away.
+                            Experience the full power of the desktop terminal on your mobile browser. Fully responsive, lightning fast, and no downloads required.
                         </p>
-                        <div style={{ display: 'flex', gap: '20px' }}>
-                            <button className="landing-btn" style={{ background: '#fff', color: '#000', padding: '16px 32px' }}><i className="fab fa-apple"></i> iOS App</button>
-                            <button className="landing-btn" style={{ background: 'transparent', border: '1px solid var(--border)', padding: '16px 32px' }}><i className="fab fa-google-play"></i> Android App</button>
+                        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                            <button className="landing-btn" style={{ background: '#fff', color: '#000', padding: '16px 32px' }} onClick={() => onStart('SIGNUP')}>Launch Web App</button>
+                            <div style={{ color: 'var(--text-light)', fontSize: '13px' }}>
+                                <i className="fas fa-info-circle" style={{ marginRight: '6px' }}></i>
+                                Native Apps Coming Soon
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -185,7 +189,7 @@ const LandingPage = ({ onStart }) => {
             <div className="sticky-footer-bar">
                 <div style={{ fontSize: '14px', fontWeight: '700' }}>Open Demat Account <span style={{ color: 'var(--green)' }}>FREE</span></div>
                 <div style={{ width: '1px', height: '20px', background: 'var(--border)' }}></div>
-                <div style={{ fontSize: '13px', color: 'var(--text-light)' }}>Join 1.2M+ Users</div>
+                <div style={{ fontSize: '13px', color: 'var(--text-light)' }}>Join Serious Traders</div>
                 <button className="landing-btn" style={{ padding: '8px 24px', fontSize: '13px', height: 'auto', borderRadius: '100px' }} onClick={() => onStart('SIGNUP')}>Start Now</button>
             </div>
         </div>
@@ -257,7 +261,7 @@ const AuthPage = ({ type, onAuth, onBack }) => {
                         Welcome to the <br /> <span style={{ color: '#fff' }}>Future of Trading</span>
                     </h1>
                     <p style={{ color: 'var(--text-light)', fontSize: '18px', lineHeight: '1.6', marginBottom: '40px' }}>
-                        Access institutional-grade tools, real-time analytics, and zero-brokerage delivery trades. Join 1.2M+ traders maximizing their potential.
+                        Access institutional-grade tools, real-time analytics, and zero-brokerage delivery trades. Trusted by serious traders.
                     </p>
                     <div className="auth-feature-list">
                         <div className="auth-feature-item">
